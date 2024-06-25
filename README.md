@@ -6,7 +6,11 @@
 > unsupported link will overwrite the previous content, the project includes retry mechanism, etc., currently supports:
 > streaming download, large file fragment download.
 
-# stash
+
+# Install
+`pip install yundownload`
+
+# Stash
 
 [yundownload GitHub](https://github.com/2214372851/yundownload)
 
@@ -53,7 +57,7 @@ download.run(error_retry=3)
     - Optimized error retry
     - This version still does not throw an exception after a retry failure
 
-# future
+# Future
 
 - Provides webui or desktop applications
 - Asynchronous support for YunDownloader (although asynchronous is currently used internally, downloader cannot be used
