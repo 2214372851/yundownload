@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "yundownload"
+version = "0.1.15"
+description = "file downloader"
+authors = ["yunhai <bybxbwg@foxmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+httpx = "^0.27.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
