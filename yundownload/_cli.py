@@ -10,6 +10,7 @@ def cli():
     parser.add_argument('-mj', '--max_join', type=int, default=16, help='Maximum connection number')
     parser.add_argument('-t', '--timeout', type=int, default=20, help='Timeout period')
     parser.add_argument('-r', '--retry', type=int, default=0, help='Retry times')
+    parser.add_argument('--stream', action='store_true', default=False, help='Forced streaming')
 
     args = parser.parse_args()
     yun = YunDownloader(
@@ -19,6 +20,7 @@ def cli():
             max_concurrency=args.max_concurrency,
             max_join=args.max_join,
         ),
-        timeout=args.timeout
+        timeout=args.timeout,
+        stream=args.stream
     )
     yun.run(error_retry=args.retry)

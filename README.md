@@ -46,7 +46,7 @@ download.run(error_retry=3)
 
 ```shell
 yundownload -h
-usage: yundownload [-h] [-mc MAX_CONCURRENCY] [-mj MAX_JOIN] [-t TIMEOUT] [-r RETRY] url save_path
+usage: yundownload [-h] [-mc MAX_CONCURRENCY] [-mj MAX_JOIN] [-t TIMEOUT] [-r RETRY] [--stream] url save_path
 
 Yun Downloader
 
@@ -64,12 +64,15 @@ options:
                         Timeout period
   -r RETRY, --retry RETRY
                         Retry times
+  --stream              Forced streaming
 ```
 
 # Update log
 
+- V 0.1.17
+    - Add forced streaming downloads
 - V 0.1.16
-  - Add command line tools
+    - Add command line tools
 - V 0.1.15
     - Optimized fragmentation download breakpoint continuation
 - V 0.1.14

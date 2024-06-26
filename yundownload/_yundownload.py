@@ -70,7 +70,7 @@ class YunDownloader:
 
     def __init__(self, url: str, save_path: str, limit: Limit = Limit(), dynamic_concurrency: bool = False,
                  update_callable: Callable = None, params: dict = None, timeout: int = 200, headers: dict = None,
-                 cookies: dict = None):
+                 cookies: dict = None, stream: bool = False):
         self.__update_callable = update_callable
         self.loop: asyncio.AbstractEventLoop | None = None
         self.limit = limit
@@ -82,6 +82,7 @@ class YunDownloader:
         self.headers = headers if headers else {}
         self.cookies = cookies
         self.params = params
+        self.stream = stream
         self.is_breakpoint = False
         self.content_length = None
         self.download_count = 0
@@ -118,7 +119,10 @@ class YunDownloader:
             logger.info(f'{self.url} file exists and size correct, skip download')
             return
         self.loop = asyncio.new_event_loop()
-        if self.content_length is not None and self.content_length > self.DISTINGUISH_SIZE and self.is_breakpoint:
+        if (not self.stream
+                and self.content_length is not None
+                and self.content_length > self.DISTINGUISH_SIZE
+                and self.is_breakpoint):
             logger.info(f'{self.url} select slice download')
             self.semaphore = _DynamicSemaphore(self.semaphore.get_permits())
             self.ping_state = True
