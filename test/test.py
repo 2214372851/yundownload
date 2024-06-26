@@ -1,5 +1,7 @@
-from yundownload import YunDownloader
-from hashlib import sha256
+import gzip
+
+from yundownload import YunDownloader, Limit
+from hashlib import sha256, md5
 from pathlib import Path
 import shutil
 
@@ -12,13 +14,38 @@ def file2sha256(path: Path):
     return sha.hexdigest()
 
 
+def file2md5(path: Path):
+    _md5 = md5()
+    with path.open('rb') as f:
+        for byte in iter(lambda: f.read(1024), b""):
+            _md5.update(byte)
+    return _md5.hexdigest()
+
+
+def gzip_check(filepath: Path):
+    try:
+        with gzip.open(filepath, 'rb') as f:
+            while f.read(1024):
+                pass
+        print('完整')
+        return True
+    except Exception as e:
+        print('file error', e)
+        return False
+
+
 def main():
-    shutil.rmtree(Path('./data'))
+    # shutil.rmtree(Path('./data'))
     yun = YunDownloader(
-        url='https://download.jetbrains.com/python/pycharm-professional-242.18071.12.exe?_gl=1*1jivofn*_gcl_au*MTMzMzQzODI4Ni4xNzE5MzI4ODc3*_ga*MjMzNzg3NzIyLjE3MTkzMjg4Nzg.*_ga_9J976DJZ68*MTcxOTMyODg3Ny4xLjEuMTcxOTMyODkzMC43LjAuMA..&_ga=2.186732461.448957342.1719328878-233787722.1719328878',
-        save_path='./data/pycharm.exe'
+        url='https://ftp.ebi.ac.uk/pub/databases/RNAcentral/releases/24.0/sequences/rnacentral_species_specific_ids.fasta.gz',
+        save_path='./data/rnacentral_species_specific_ids.fasta.gz',
+        limit=Limit(
+            max_concurrency=8,
+            max_join=16
+        )
     )
     yun.run()
+    gzip_check(Path('./data/rnacentral_species_specific_ids.fasta.gz'))
 
 
 if __name__ == '__main__':
