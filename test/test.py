@@ -41,7 +41,8 @@ def main():
         limit=Limit(
             max_concurrency=8,
             max_join=16
-        )
+        ),
+        stream=True
     )
     yun.run()
     gzip_check(Path('./data/rnacentral_species_specific_ids.fasta.gz'))

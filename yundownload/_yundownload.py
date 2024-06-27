@@ -93,7 +93,7 @@ class YunDownloader:
         self._last_concurrency = -1
         self.ping_state = True
 
-    def check_breakpoint(self):
+    def __check_breakpoint(self):
         with httpx.Client(
                 timeout=self.timeout,
                 headers=self.headers,
@@ -114,7 +114,7 @@ class YunDownloader:
             except Exception as e:
                 logger.error(f'{self.url} check breakpoint error: {e}')
 
-    def select_downloader(self):
+    def __select_downloader(self):
         if self.save_path.exists() and self.save_path.stat().st_size == self.content_length:
             logger.info(f'{self.url} file exists and size correct, skip download')
             return
@@ -126,19 +126,19 @@ class YunDownloader:
             logger.info(f'{self.url} select slice download')
             self.semaphore = _DynamicSemaphore(self.semaphore.get_permits())
             self.ping_state = True
-            self.loop.run_until_complete(self.slice_download())
+            self.loop.run_until_complete(self.__slice_download())
         else:
             logger.info(f'{self.url} select stream download')
             stop_event = threading.Event()
-            t = Thread(target=lambda: self.heartbeat_t(stop_event), daemon=True)
+            t = Thread(target=lambda: self.__heartbeat_t(stop_event), daemon=True)
             t.start()
-            self.stream_download()
+            self.__stream_download()
             stop_event.set()
             t.join()
         self.loop.close()
 
-    async def chunk_download(self, semaphore: _DynamicSemaphore, client: httpx.AsyncClient, chunk_start: int,
-                             chunk_end: int, save_path: Path):
+    async def __chunk_download(self, semaphore: _DynamicSemaphore, client: httpx.AsyncClient, chunk_start: int,
+                               chunk_end: int, save_path: Path):
         await semaphore.acquire()
         headers = {'Range': f'bytes={chunk_start}-{chunk_end}'}
         if save_path.exists():
@@ -164,9 +164,9 @@ class YunDownloader:
             finally:
                 semaphore.release()
 
-    async def slice_download(self):
+    async def __slice_download(self):
         # noinspection PyAsyncCall
-        ping = self.loop.create_task(self.heartbeat())
+        ping = self.loop.create_task(self.__heartbeat())
 
         async with httpx.AsyncClient(
                 timeout=self.timeout,
@@ -185,14 +185,14 @@ class YunDownloader:
                     self.save_path.stem, str(index).zfill(5))
                 logger.info(f'{self.url} slice download {index} {chunk_start} {chunk_end}')
                 tasks.append(self.loop.create_task(
-                    self.chunk_download(self.semaphore, client, chunk_start, chunk_end, save_path)))
+                    self.__chunk_download(self.semaphore, client, chunk_start, chunk_end, save_path)))
 
             tasks = await asyncio.gather(*tasks)
             self.ping_state = False
             await ping
             if all(tasks):
                 logger.info(f'{self.save_path} Download all slice success')
-                merge_state = await self.merge_chunk()
+                merge_state = await self.__merge_chunk()
                 if not merge_state:
                     raise Exception(f'{self.save_path} Merge all slice error')
                 logger.info(f'Success download file, run time: {int(time.time() - self.start_time)} S')
@@ -200,7 +200,7 @@ class YunDownloader:
                 logger.error(f'{self.save_path} Download all slice error')
                 raise Exception(f'{self.save_path} Download all slice error')
 
-    async def merge_chunk(self):
+    async def __merge_chunk(self):
         slice_files = list(self.save_path.parent.glob(f'*{self.save_path.stem}*.distributeddownloader'))
         slice_files.sort(key=lambda x: int(x.stem.split('--')[1]))
 
@@ -227,7 +227,7 @@ class YunDownloader:
             logger.error(f'{self.save_path} merge chunk error: {e}')
             return False
 
-    def stream_download(self):
+    def __stream_download(self):
         with httpx.Client(
                 timeout=self.timeout,
                 headers=self.headers,
@@ -249,11 +249,12 @@ class YunDownloader:
                         for chunk in res.iter_bytes(chunk_size=2048):
                             f.write(chunk)
                             self.download_count += len(chunk)
+                    logger.info(f'{self.save_path} stream download success')
                 except Exception as e:
                     logger.error(f'{self.url} stream download error: {e}')
                     raise e
 
-    async def heartbeat(self):
+    async def __heartbeat(self):
         while self.ping_state:
             try:
                 await asyncio.sleep(self.HEARTBEAT_SLEEP)
@@ -288,7 +289,7 @@ class YunDownloader:
                 logger.warning("Task is cancelling...")
                 return
 
-    def heartbeat_t(self, stop_event):
+    def __heartbeat_t(self, stop_event):
         while not stop_event.is_set():
             time.sleep(self.HEARTBEAT_SLEEP)
             if self.download_count == 0:
@@ -314,18 +315,18 @@ class YunDownloader:
             self.last_count = self.download_count
         logger.warning("Task is cancelling...")
 
-    def workflow(self):
+    def __workflow(self):
         logger.info(f'{self.url} workflow start')
         self.download_count = 0
-        self.check_breakpoint()
-        self.select_downloader()
+        self.__check_breakpoint()
+        self.__select_downloader()
 
     def run(self, error_retry: int | bool = False):
         if isinstance(error_retry, int) and error_retry > 0:
             flag = 0
             while True:
                 try:
-                    self.workflow()
+                    self.__workflow()
                     break
                 except Exception as e:
                     logger.error(f'{self.url} download error: {e}')
@@ -334,4 +335,4 @@ class YunDownloader:
                         logger.warning(f'{self.url} download retry skip: {e}')
                         raise e
         else:
-            self.workflow()
+            self.__workflow()

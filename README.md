@@ -68,7 +68,8 @@ options:
 ```
 
 # Update log
-
+- V 0.1.18
+  - Fix known bugs
 - V 0.1.17
     - Add forced streaming downloads
 - V 0.1.16
