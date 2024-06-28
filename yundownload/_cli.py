@@ -8,7 +8,7 @@ def cli():
     parser.add_argument('save_path', type=str, help='Save path, including file name')
     parser.add_argument('-mc', '--max_concurrency', default=4, type=int, help='Maximum concurrency')
     parser.add_argument('-mj', '--max_join', type=int, default=16, help='Maximum connection number')
-    parser.add_argument('-t', '--timeout', type=int, default=20, help='Timeout period')
+    parser.add_argument('-t', '--timeout', type=int, default=100, help='Timeout period')
     parser.add_argument('-r', '--retry', type=int, default=0, help='Retry times')
     parser.add_argument('--stream', action='store_true', default=False, help='Forced streaming')
 
