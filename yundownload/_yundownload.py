@@ -144,10 +144,14 @@ class YunDownloader:
         if save_path.exists():
             if save_path.stat().st_size == self.CHUNK_SIZE:
                 logger.info(f'{save_path} chunk {chunk_start}-{chunk_end} skip')
-                self.download_count += (chunk_end - chunk_start + 1)
+                self.download_count += self.CHUNK_SIZE
                 semaphore.release()
                 return True
-            headers['Range'] = f'bytes={chunk_start + save_path.stat().st_size}-{chunk_end}'
+            elif save_path.stat().st_size > self.CHUNK_SIZE:
+                save_path.unlink(missing_ok=True)
+            else:
+                headers['Range'] = f'bytes={chunk_start + save_path.stat().st_size}-{chunk_end}'
+
         async with client.stream('GET', self.url, headers=headers) as res:
             try:
                 res.raise_for_status()
@@ -160,6 +164,7 @@ class YunDownloader:
                 return True
             except Exception as e:
                 logger.error(f'{save_path} chunk download error: {e}')
+                raise e
                 return False
             finally:
                 semaphore.release()
@@ -236,12 +241,19 @@ class YunDownloader:
             headers = {}
             if self.is_breakpoint and self.content_length is not None:
                 # 如果保存路径存在，则设置Range请求头，从已下载的大小开始继续下载
-                if self.save_path.exists():
-                    self.headers['Range'] = f'bytes={self.save_path.stat().st_size + 1}-'
+                if self.save_path.exists() and self.save_path.stat().st_size < self.content_length:
+                    headers['Range'] = f'bytes={self.save_path.stat().st_size}-'
                     self.download_count = self.save_path.stat().st_size
                     logger.info(f'{self.url} breakpoint download')
+                elif self.save_path.exists() and self.save_path.stat().st_size == self.content_length:
+                    logger.info(f'{self.url} download success')
+                    return
+                else:
+                    self.save_path.unlink(missing_ok=True)
+                    logger.info(f'{self.url} new download')
             else:
                 self.save_path.unlink(missing_ok=True)
+                logger.info(f'{self.url} new download')
             with client.stream('GET', self.url, headers=headers) as res:
                 try:
                     res.raise_for_status()

@@ -36,17 +36,19 @@ def gzip_check(filepath: Path):
 
 def main():
     yun = YunDownloader(
-        url='https://ftp.ebi.ac.uk/pub/databases/RNAcentral/releases/24.0/sequences/rnacentral_species_specific_ids.fasta.gz',
-        save_path='./data/rnacentral_species_specific_ids.fasta.gz',
+        url='https://ftp.ebi.ac.uk/pub/databases/RNAcentral/releases/24.0/go_annotations/rnacentral_rfam_annotations.tsv.gz',
+        save_path='./data/rnacentral_rfam_annotations.tsv.gz',
         limit=Limit(
             max_concurrency=8,
             max_join=16
         ),
-        stream=True
+        stream=False
     )
+    yun.DISTINGUISH_SIZE = 10 * 1024 * 1024
+    yun.CHUNK_SIZE = 10 * 1024 * 1024
     yun.run()
-    gzip_check(Path('./data/rnacentral_species_specific_ids.fasta.gz'))
-    file2md5(Path('./data/rnacentral_species_specific_ids.fasta.gz'))
+    gzip_check(Path('./data/rnacentral_rfam_annotations.tsv.gz'))
+    # file2md5(Path('./data/rnacentral_species_specific_ids.fasta.gz'))
 
 
 if __name__ == '__main__':

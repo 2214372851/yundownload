@@ -68,6 +68,12 @@ options:
 ```
 
 # Update log
+- V 0.1.21
+  - Repair download failure displays complete
+- V 0.1.20
+  - Fixed an issue with fragment breakpoint continuation in fragment download
+- V 0.1.19
+  - Fix stream download breakpoint resume issue
 - V 0.1.18
   - Fix known bugs
 - V 0.1.17
