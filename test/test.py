@@ -36,8 +36,8 @@ def gzip_check(filepath: Path):
 
 def main():
     yun = YunDownloader(
-        url='https://ftp.ebi.ac.uk/pub/databases/RNAcentral/releases/24.0/go_annotations/rnacentral_rfam_annotations.tsv.gz',
-        save_path='./data/rnacentral_rfam_annotations.tsv.gz',
+        url='https://down.360safe.com/se/360aibrowser1.1.1108.64.exe',
+        save_path='./data/360aibrowser1.1.1108.64.exe',
         limit=Limit(
             max_concurrency=8,
             max_join=16
