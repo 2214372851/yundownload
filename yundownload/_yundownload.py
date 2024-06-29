@@ -7,17 +7,10 @@ from pathlib import Path
 from threading import Thread
 from typing import Callable
 from dataclasses import dataclass
+from tqdm import tqdm
 import httpx
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] <%(name)s> [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        logging.StreamHandler(),
-    ],
-)
 
 
 @dataclass
@@ -70,10 +63,12 @@ class YunDownloader:
 
     def __init__(self, url: str, save_path: str, limit: Limit = Limit(), dynamic_concurrency: bool = False,
                  update_callable: Callable = None, params: dict = None, timeout: int = 200, headers: dict = None,
-                 cookies: dict = None, stream: bool = False):
+                 cookies: dict = None, stream: bool = False, cli: bool = False):
         self.__update_callable = update_callable
         self.loop: asyncio.AbstractEventLoop | None = None
         self.limit = limit
+        self.tq: tqdm | None = None
+        self.cli = cli
         self.semaphore = _DynamicSemaphore(limit.max_concurrency)
         self.url = url
         self.save_path = Path(save_path)
@@ -106,7 +101,8 @@ class YunDownloader:
                 content_res.raise_for_status()
                 content_length = int(content_res.headers.get('content-length', -1))
                 if content_length == -1: return
-
+                if self.cli:
+                    self.tq = tqdm(total=content_length, unit='B', unit_scale=True, desc=self.url.split('/')[-1])
                 res = client.get(self.url, headers={'Range': 'bytes=0-1'})
                 if res.status_code != 206: return
                 self.is_breakpoint = True
@@ -117,6 +113,8 @@ class YunDownloader:
     def __select_downloader(self):
         if self.save_path.exists() and self.save_path.stat().st_size == self.content_length:
             logger.info(f'{self.url} file exists and size correct, skip download')
+            if self.cli:
+                print(f'\n{self.url} file exists and size correct, skip download')
             return
         self.loop = asyncio.new_event_loop()
         if (not self.stream
@@ -164,7 +162,6 @@ class YunDownloader:
                 return True
             except Exception as e:
                 logger.error(f'{save_path} chunk download error: {e}')
-                raise e
                 return False
             finally:
                 semaphore.release()
@@ -274,7 +271,8 @@ class YunDownloader:
                     logger.info(f'{self.url} heartbeat: wait download')
                     continue
                 progress = (self.download_count / self.content_length) if self.content_length is not None else -1
-                speed = (self.download_count - self.last_count) / 1048576 / self.HEARTBEAT_SLEEP
+                gap = self.download_count - self.last_count
+                speed = gap / 1048576 / self.HEARTBEAT_SLEEP
                 if self.__update_callable:
                     self.__update_callable(
                         state='PROGRESS',
@@ -283,6 +281,8 @@ class YunDownloader:
                             'speed': speed,
                             'run_time': self.start_time
                         })
+                if self.tq:
+                    self.tq.update(gap)
                 average_concurrency = sum(self._response_time_deque) / len(self._response_time_deque) if len(
                     self._response_time_deque) else None
                 logger.info(f'{self.url} '
@@ -298,7 +298,7 @@ class YunDownloader:
                     self._last_concurrency = average_concurrency
                 self.last_count = self.download_count
             except Exception as e:
-                logger.warning("Task is cancelling...")
+                logger.info("Task is cancelling...")
                 return
 
     def __heartbeat_t(self, stop_event):
@@ -308,7 +308,8 @@ class YunDownloader:
                 logger.info(f'{self.url} heartbeat: wait download')
                 continue
             progress = (self.download_count / self.content_length) if self.content_length is not None else -1
-            speed = (self.download_count - self.last_count) / 1048576 / self.HEARTBEAT_SLEEP
+            gap = self.download_count - self.last_count
+            speed = gap / 1048576 / self.HEARTBEAT_SLEEP
 
             if self.__update_callable:
                 self.__update_callable(
@@ -318,6 +319,8 @@ class YunDownloader:
                         'speed': speed,
                         'run_time': self.start_time
                     })
+            if self.tq:
+                self.tq.update(gap)
             logger.info(f'{self.url} '
                         f'heartbeat: {progress * 100:.2f} '
                         f'run_time: {int(time.time() - self.start_time)} '
@@ -325,7 +328,7 @@ class YunDownloader:
                         f'download_size: {self.download_count / 1048576:.2f} MB')
 
             self.last_count = self.download_count
-        logger.warning("Task is cancelling...")
+        logger.info("Task is cancelling...")
 
     def __workflow(self):
         logger.info(f'{self.url} workflow start')

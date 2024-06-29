@@ -68,6 +68,10 @@ options:
 ```
 
 # Update log
+- V 0.1.23
+  - Remove the default log display and add a progress bar to the command line tool
+- V 0.1.22
+  - Fixed exception handling of sharding download
 - V 0.1.21
   - Repair download failure displays complete
 - V 0.1.20
