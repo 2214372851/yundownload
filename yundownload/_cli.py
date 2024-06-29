@@ -21,6 +21,7 @@ def cli():
             max_join=args.max_join,
         ),
         timeout=args.timeout,
-        stream=args.stream
+        stream=args.stream,
+        cli=True
     )
     yun.run(error_retry=args.retry)

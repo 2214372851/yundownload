@@ -3,7 +3,16 @@ import gzip
 from yundownload import YunDownloader, Limit
 from hashlib import sha256, md5
 from pathlib import Path
+import logging
 
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format="[%(asctime)s] <%(name)s> [%(levelname)s] %(message)s",
+#     datefmt="%Y-%m-%d %H:%M:%S",
+#     handlers=[
+#         logging.StreamHandler(),
+#     ],
+# )
 
 def file2sha256(path: Path):
     sha = sha256()
@@ -36,18 +45,18 @@ def gzip_check(filepath: Path):
 
 def main():
     yun = YunDownloader(
-        url='https://down.360safe.com/se/360aibrowser1.1.1108.64.exe',
-        save_path='./data/360aibrowser1.1.1108.64.exe',
+        url='https://speed.cloudflare.com/__down?during=download&bytes=1073741824',
+        save_path='./data/data',
         limit=Limit(
             max_concurrency=8,
             max_join=16
         ),
-        stream=False
+        # stream=True
     )
     yun.DISTINGUISH_SIZE = 10 * 1024 * 1024
     yun.CHUNK_SIZE = 10 * 1024 * 1024
     yun.run()
-    gzip_check(Path('./data/rnacentral_rfam_annotations.tsv.gz'))
+    # gzip_check(Path('./data/rnacentral_rfam_annotations.tsv.gz'))
     # file2md5(Path('./data/rnacentral_species_specific_ids.fasta.gz'))
 
 
