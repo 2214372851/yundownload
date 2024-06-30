@@ -78,7 +78,6 @@ jobs:
           echo "PYPI_API_TOKEN=${{ secrets.PYPI_API_TOKEN }}"
 
       - name: Publish to PyPI
-        if: github.event_name != 'pull_request'
         run: |
           poetry publish
 
