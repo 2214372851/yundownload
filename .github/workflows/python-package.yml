@@ -14,6 +14,8 @@ permissions:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    environment:
+      name: PYPI
     strategy:
       fail-fast: false
       matrix:
