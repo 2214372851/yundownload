@@ -61,14 +61,31 @@ class YunDownloader:
     HEARTBEAT_SLEEP = 5
     DISTINGUISH_SIZE = 500 * 1024 * 1024
 
-    def __init__(self, url: str, save_path: str, limit: Limit = Limit(), dynamic_concurrency: bool = False,
-                 update_callable: Callable = None, params: dict = None, timeout: int = 200, headers: dict = None,
-                 cookies: dict = None, stream: bool = False, cli: bool = False):
+    def __init__(self,
+                 url: str,
+                 save_path: str,
+                 limit: Limit = Limit(max_concurrency=8, max_join=16),
+                 dynamic_concurrency: bool = False,
+                 update_callable: Callable = None,
+                 params: dict = None,
+                 auth: httpx.BasicAuth = None,
+                 timeout: int = 200,
+                 headers: dict = None,
+                 cookies: dict = None,
+                 stream: bool = False,
+                 max_redirects: int = 5,
+                 retries: int = 5,
+                 verify: bool = True,
+                 cli: bool = False):
         self.__update_callable = update_callable
         self.loop: asyncio.AbstractEventLoop | None = None
+        self.auth: httpx.BasicAuth | None = auth
         self.limit = limit
         self.tq: tqdm | None = None
         self.cli = cli
+        self.retries = retries
+        self.verify = verify
+        self.max_redirects = max_redirects
         self.semaphore = _DynamicSemaphore(limit.max_concurrency)
         self.url = url
         self.save_path = Path(save_path)
@@ -94,7 +111,9 @@ class YunDownloader:
                 headers=self.headers,
                 cookies=self.cookies,
                 params=self.params,
-                transport=httpx.HTTPTransport(retries=5),
+                auth=self.auth,
+                verify=self.verify,
+                transport=httpx.HTTPTransport(retries=self.retries),
                 follow_redirects=True) as client:
             try:
                 content_res = client.head(self.url, timeout=self.timeout, headers=self.headers, cookies=self.cookies)
@@ -175,10 +194,12 @@ class YunDownloader:
                 headers=self.headers,
                 cookies=self.cookies,
                 params=self.params,
-                transport=httpx.AsyncHTTPTransport(retries=5),
+                auth=self.auth,
+                verify=self.verify,
+                transport=httpx.AsyncHTTPTransport(retries=self.retries),
                 follow_redirects=True,
                 limits=httpx.Limits(max_connections=self.limit.max_join, max_keepalive_connections=self.limit.max_join),
-                max_redirects=5) as client:
+                max_redirects=self.max_redirects) as client:
 
             tasks = []
             for index, chunk_start in enumerate(range(0, self.content_length, self.CHUNK_SIZE)):
@@ -234,7 +255,10 @@ class YunDownloader:
                 timeout=self.timeout,
                 headers=self.headers,
                 cookies=self.cookies,
-                transport=httpx.HTTPTransport(retries=5)) as client:
+                auth=self.auth,
+                verify=self.verify,
+                transport=httpx.HTTPTransport(retries=self.retries),
+                max_redirects=self.max_redirects) as client:
             headers = {}
             if self.is_breakpoint and self.content_length is not None:
                 # 如果保存路径存在，则设置Range请求头，从已下载的大小开始继续下载
