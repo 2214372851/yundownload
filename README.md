@@ -68,6 +68,12 @@ options:
 ```
 
 # Update log
+
+- V 0.1.24
+  - Add the auth parameter to carry identity information
+  - You can add the max_redirects parameter to limit the number of redirects
+  - Add the retries parameter to specify the number of request tries
+  - Add the verify parameter to specify whether to verify the SSL certificate
 - V 0.1.23
   - Remove the default log display and add a progress bar to the command line tool
 - V 0.1.22
