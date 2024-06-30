@@ -3,12 +3,13 @@ import logging
 import threading
 import time
 from collections import deque
+from dataclasses import dataclass
 from pathlib import Path
 from threading import Thread
 from typing import Callable
-from dataclasses import dataclass
-from tqdm import tqdm
+
 import httpx
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class YunDownloader:
     def __init__(self,
                  url: str,
                  save_path: str,
-                 limit: Limit = Limit(max_concurrency=8, max_join=16),
+                 limit: Limit = Limit(),
                  dynamic_concurrency: bool = False,
                  update_callable: Callable = None,
                  params: dict = None,
