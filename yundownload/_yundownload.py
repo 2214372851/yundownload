@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Limit:
-    max_concurrency: int = 4
+    max_concurrency: int = 8
     max_join: int = 16
 
 
