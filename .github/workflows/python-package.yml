@@ -103,4 +103,4 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git commit -am "Bump version to $NEW_VERSION [skip ci]"
-          git push origin HEAD:main
+          git push origin main
