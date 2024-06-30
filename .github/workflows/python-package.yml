@@ -38,13 +38,8 @@ jobs:
         run: |
           # 读取当前版本号
           CURRENT_VERSION=$(poetry version --short)
-          # 版本号递增逻辑，这里以递增补丁号为例
-          NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1 "." $2 "." ($3+1)}')
-          # 更新pyproject.toml中的版本号
-          poetry version $NEW_VERSION
-          echo "New version is $NEW_VERSION"
           # 将新版本号保存为环境变量，用于后续操作
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "CURRENT_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
 
 
@@ -97,11 +92,3 @@ jobs:
           asset_path: ./dist/naive-${{ env.NEW_VERSION }}-py3-none-any.whl
           asset_name: naive-${{ env.NEW_VERSION }}-py3-none-any.whl
           asset_content_type: application/zip
-
-      - name: Commit and push version bump
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git checkout origin/main
-          git commit -am "Bump version to $NEW_VERSION [skip ci]"
-          git push origin HEAD:main
