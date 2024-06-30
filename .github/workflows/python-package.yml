@@ -1,0 +1,96 @@
+name: Python package
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.10" ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        run: |
+          python -m pip install poetry
+
+      - name: Bump version
+        run: |
+          # 读取当前版本号
+          CURRENT_VERSION=$(poetry version --short)
+          # 版本号递增逻辑，这里以递增补丁号为例
+          NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1 "." $2 "." ($3+1)}')
+          # 更新pyproject.toml中的版本号
+          poetry version $NEW_VERSION
+          echo "New version is $NEW_VERSION"
+          # 将新版本号保存为环境变量，用于后续操作
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Commit and push version bump
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -am "Bump version to $NEW_VERSION [skip ci]"
+          git push origin HEAD:master
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Build Package
+        run: |
+          poetry build
+
+      - name: List dist directory
+        run: |
+          ls -la ./dist
+
+      - name: Create GitHub Release
+        if: github.event_name != 'pull_request'
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.NEW_VERSION }}
+          release_name: Release v${{ env.NEW_VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: set pypi api token
+        run: |
+          poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Publish to PyPI
+        if: github.event_name != 'pull_request'
+        run: |
+          poetry publish
+
+      - name: Upload Release Asset
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/naive-${{ env.NEW_VERSION }}-py3-none-any.whl
+          asset_name: naive-${{ env.NEW_VERSION }}-py3-none-any.whl
+          asset_content_type: application/zip
