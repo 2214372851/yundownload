@@ -5,14 +5,14 @@ from hashlib import sha256, md5
 from pathlib import Path
 import logging
 
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format="[%(asctime)s] <%(name)s> [%(levelname)s] %(message)s",
-#     datefmt="%Y-%m-%d %H:%M:%S",
-#     handlers=[
-#         logging.StreamHandler(),
-#     ],
-# )
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] <%(name)s> [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.StreamHandler(),
+    ],
+)
 
 def file2sha256(path: Path):
     sha = sha256()
@@ -45,16 +45,19 @@ def gzip_check(filepath: Path):
 
 def main():
     yun = YunDownloader(
-        url='https://speed.cloudflare.com/__down?during=download&bytes=1073741824',
-        save_path='./data/data',
+        url='https://hgdownload2.soe.ucsc.edu/gbdb/mm9/bbi/wgEncodeCshlLongRnaSeqAdrenalAdult8wksAlnRep2V2.bam',
+        save_path='./data/wgEncodeCshlLongRnaSeqAdrenalAdult8wksAlnRep2V2.bam',
         limit=Limit(
-            max_concurrency=8,
+            max_concurrency=16,
             max_join=16
         ),
+        headers={'Accept-Encoding': 'identity'},
+        retries=100,
+        timeout=400
         # stream=True
     )
-    yun.DISTINGUISH_SIZE = 10 * 1024 * 1024
-    yun.CHUNK_SIZE = 10 * 1024 * 1024
+    # yun.DISTINGUISH_SIZE = 10 * 1024 * 1024
+    # yun.CHUNK_SIZE = 10 * 1024 * 1024
     yun.run()
     # gzip_check(Path('./data/rnacentral_rfam_annotations.tsv.gz'))
     # file2md5(Path('./data/rnacentral_species_specific_ids.fasta.gz'))
