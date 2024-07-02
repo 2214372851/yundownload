@@ -20,15 +20,15 @@
 from yundownload import YunDownloader, Limit
 
 download = YunDownloader(
-    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-    limit=Limit(
-        max_concurrency=4,
-        max_join=4
-    ),  # concurrency
-    timeout=1000,
-    # You are advised to set a longer timeout period for large file fragments because large file fragments exert pressure on the peer server
-    dynamic_concurrency=True,
-    save_path='QQ9.7.17.29225.exe'
+  url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+  limit=Limit(
+    max_concurrency=4,
+    max_join=4
+  ),  # concurrency
+  timeout=1000,
+  # You are advised to set a longer timeout period for large file fragments because large file fragments exert pressure on the peer server
+  dynamic_concurrency=True,
+  save_path='QQ9.7.17.29225.exe'
 )
 # Files larger than this size are downloaded in fragments
 download.DISTINGUISH_SIZE = 100 * 1024 * 1024
@@ -69,23 +69,25 @@ options:
 
 # Update log
 
-- V 0.1.24
-  - Add the auth parameter to carry identity information
-  - You can add the max_redirects parameter to limit the number of redirects
-  - Add the retries parameter to specify the number of request tries
-  - Add the verify parameter to specify whether to verify the SSL certificate
-- V 0.1.23
-  - Remove the default log display and add a progress bar to the command line tool
-- V 0.1.22
-  - Fixed exception handling of sharding download
-- V 0.1.21
-  - Repair download failure displays complete
-- V 0.1.20
-  - Fixed an issue with fragment breakpoint continuation in fragment download
+- V 0.2.5
+    - Fix known bugs
+- V 0.2.4
+    - Add the auth parameter to carry identity information
+    - You can add the max_redirects parameter to limit the number of redirects
+    - Add the retries parameter to specify the number of request tries
+    - Add the verify parameter to specify whether to verify the SSL certificate
+- V 0.2.3
+    - Remove the default log display and add a progress bar to the command line tool
+- V 0.2.2
+    - Fixed exception handling of sharding download
+- V 0.2.1
+    - Repair download failure displays complete
+- V 0.2.0
+    - Fixed an issue with fragment breakpoint continuation in fragment download
 - V 0.1.19
-  - Fix stream download breakpoint resume issue
+    - Fix stream download breakpoint resume issue
 - V 0.1.18
-  - Fix known bugs
+    - Fix known bugs
 - V 0.1.17
     - Add forced streaming downloads
 - V 0.1.16
