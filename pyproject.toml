@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yundownload"
-version = "0.2.5"
+version = "0.2.6"
 description = "file downloader"
 authors = ["yunhai <bybxbwg@foxmail.com>"]
 license = "MIT"
