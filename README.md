@@ -73,7 +73,7 @@ options:
 # Update log
 
 - V 0.2.6
-  - 修改分片下载中文件写入为异步
+  - None Example Change the asynchronous writing of files in fragment download
 - V 0.2.5
     - Fix known bugs
 - V 0.2.4
