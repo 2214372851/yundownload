@@ -1,9 +1,0 @@
-site_name: Yun download
-site_url: http://127.0.0.1:8000
-
-nav:
-  - 介绍: "index.md"
-  - 快速入门: "quickstart.md"
-
-theme:
-  name: material

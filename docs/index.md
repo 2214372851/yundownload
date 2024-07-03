@@ -1,4 +1,10 @@
-![HTTPX](https://raw.githubusercontent.com/encode/httpx/master/docs/img/butterfly.png)
+![Yun Download](images/pdx1.gif)
+![Yun Download](images/pdx2.gif)
+![Yun Download](images/pdx3.gif)
+![Yun Download](images/pdx4.gif)
+![Yun Download](images/pdx5.gif)
+![Yun Download](images/pdx6.gif)
+![Yun Download](images/pdx7.gif)
 
 # Yun download
 
@@ -14,13 +20,13 @@ Yun download 是 Python 3 的文件下载器，它提供流式下载和文件分
 
 使用 pip 安装 Yun download：
 
-`$ pip install yundownlaod`
+`$ pip install yundownload`
 
 现在，让我们开始第一个示例：
 
 ```shell
->>> import yundownlaod
->>> y = yundownload.YunDownloader('https://bing.com', './bing.html')
+>>> from yundownload import YunDownloader
+>>> y = YunDownloader('https://bing.com', './bing.html')
 >>> y.run()
 ```
 
@@ -100,15 +106,15 @@ Yun download 建立在 `httpx` 模块上，并为您提供：
 - 分块请求
 
 ## 文档
-pip install mkdocs 
-pip install mkdocs-material
+
 要了解所有基础知识，请转到[快速入门](quickstart.md)。
 
 ## 依赖项
 
-HTTPX 项目依赖于这些优秀的库：
+`Yun download` 项目依赖于这些优秀的库：
 
 - `httpx`- 网络请求。
+- `aiofiles`- 异步文件读写。
 - `tqdm`-命令行进度条。
 - `certifi`-SSL 证书。
 - `idna`- 国际化域名支持。
@@ -124,4 +130,4 @@ HTTPX 项目依赖于这些优秀的库：
 $ pip install yundownload
 ```
 
-Yun download 需要 Python 3.10+
+`Yun download` 需要 `Python 3.10+`

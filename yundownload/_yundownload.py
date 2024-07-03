@@ -8,6 +8,7 @@ from pathlib import Path
 from threading import Thread
 from typing import Callable
 
+import aiofiles
 import httpx
 from tqdm import tqdm
 
@@ -173,9 +174,9 @@ class YunDownloader:
         async with client.stream('GET', self.url, headers=headers) as res:
             try:
                 res.raise_for_status()
-                with save_path.open('ab') as f:
+                async with aiofiles.open(save_path, 'ab') as f:
                     async for chunk in res.aiter_bytes(chunk_size=2048):
-                        f.write(chunk)
+                        await f.write(chunk)
                         res: httpx.Response
                         self.download_count += len(chunk)
                     self._response_time_deque.append(res.elapsed.seconds)
