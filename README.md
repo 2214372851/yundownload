@@ -72,6 +72,8 @@ options:
 
 # Update log
 
+- V 0.2.8
+  - Fix known bugs and add warnings for subsequent optimization of large file shards
 - V 0.2.7
   - Fix known bugs
 - V 0.2.6

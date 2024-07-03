@@ -157,15 +157,15 @@ class YunDownloader:
             t.join()
         self.loop.close()
 
-    async def __chunk_download(self, semaphore: _DynamicSemaphore, client: httpx.AsyncClient, chunk_start: int,
+    async def __chunk_download(self, client: httpx.AsyncClient, chunk_start: int,
                                chunk_end: int, save_path: Path):
-        await semaphore.acquire()
+        await self.semaphore.acquire()
         headers = {'Range': f'bytes={chunk_start}-{chunk_end}'}
         if save_path.exists():
             if save_path.stat().st_size == self.CHUNK_SIZE:
                 logger.info(f'{save_path} chunk {chunk_start}-{chunk_end} skip')
                 self.download_count += self.CHUNK_SIZE
-                semaphore.release()
+                self.semaphore.release()
                 return True
             elif save_path.stat().st_size > self.CHUNK_SIZE:
                 save_path.unlink(missing_ok=True)
@@ -186,7 +186,7 @@ class YunDownloader:
                 logger.error(f'{save_path} chunk download error: {e}')
                 return False
             finally:
-                semaphore.release()
+                self.semaphore.release()
 
     async def __slice_download(self):
         # noinspection PyAsyncCall
@@ -205,13 +205,16 @@ class YunDownloader:
                 max_redirects=self.max_redirects) as client:
 
             tasks = []
+            if self.content_length / self.CHUNK_SIZE > 200:
+                logger.warning(
+                    f'{self.url} The file size exceeds the threshold of 200. Ensure the file server performance')
             for index, chunk_start in enumerate(range(0, self.content_length, self.CHUNK_SIZE)):
                 chunk_end = min(chunk_start + self.CHUNK_SIZE - 1, self.content_length)
                 save_path = self.save_path.parent / '{}--{}.distributeddownloader'.format(
                     self.save_path.stem, str(index).zfill(5))
                 logger.info(f'{self.url} slice download {index} {chunk_start} {chunk_end}')
                 tasks.append(self.loop.create_task(
-                    self.__chunk_download(self.semaphore, client, chunk_start, chunk_end, save_path)))
+                    self.__chunk_download(client, chunk_start, chunk_end, save_path)))
 
             tasks = await asyncio.gather(*tasks)
             self.ping_state = False
