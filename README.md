@@ -72,10 +72,8 @@ options:
 
 # Update log
 
-- V 0.2.7
-    - Modify the size of each write when streaming
 - V 0.2.6
-    - None Example Change the asynchronous writing of files in fragment download
+  - None Example Change the asynchronous writing of files in fragment download
 - V 0.2.5
     - Fix known bugs
 - V 0.2.4
