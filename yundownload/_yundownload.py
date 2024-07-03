@@ -62,6 +62,7 @@ class YunDownloader:
     CHUNK_SIZE = 100 * 1024 * 1024
     HEARTBEAT_SLEEP = 5
     DISTINGUISH_SIZE = 500 * 1024 * 1024
+    STREAM_SIZE = 1 * 1024 * 1024
 
     def __init__(self,
                  url: str,
@@ -175,7 +176,7 @@ class YunDownloader:
             try:
                 res.raise_for_status()
                 async with aiofiles.open(save_path, 'ab') as f:
-                    async for chunk in res.aiter_bytes(chunk_size=2048):
+                    async for chunk in res.aiter_bytes(chunk_size=self.STREAM_SIZE):
                         await f.write(chunk)
                         res: httpx.Response
                         self.download_count += len(chunk)
@@ -281,7 +282,7 @@ class YunDownloader:
                 try:
                     res.raise_for_status()
                     with self.save_path.open('ab+') as f:
-                        for chunk in res.iter_bytes(chunk_size=2048):
+                        for chunk in res.iter_bytes(chunk_size=self.STREAM_SIZE):
                             f.write(chunk)
                             self.download_count += len(chunk)
                     logger.info(f'{self.save_path} stream download success')

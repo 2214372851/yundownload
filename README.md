@@ -72,6 +72,8 @@ options:
 
 # Update log
 
+- V 0.2.7
+  - Fix known bugs
 - V 0.2.6
   - None Example Change the asynchronous writing of files in fragment download
 - V 0.2.5
