@@ -1,0 +1,22 @@
+site_name: Yun download
+site_url: https://2214372851.github.io/yundownload/
+repo_url: https://github.com/2214372851/yundownload
+copyright: Copyright 2021-2024
+repo_name: 2214372851/yundownload
+
+nav:
+  - 介绍: "index.md"
+  - 快速入门: "quickstart.md"
+
+theme:
+  name: material
+  language: zh
+
+plugins:
+  - git-revision-date-localized
+  - search:
+      lang: ru
+
+# mkdocs gh-deploy 提交到git pages
+# pip install mkdocs
+# pip install mkdocs-material

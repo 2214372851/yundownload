@@ -1,5 +1,8 @@
+[![PyPI version](https://badge.fury.io/py/yundownload.svg)](https://badge.fury.io/py/yundownload)
+
 # Intro
 
+[官方文档](https://2214372851.github.io/yundownload/)
 > This project is a file downloader, supporting dynamic download according to the size of the file to choose the
 > download mode, for the connection that supports breakpoint continuation will automatically break the connection, for
 > the
@@ -20,15 +23,15 @@
 from yundownload import YunDownloader, Limit
 
 download = YunDownloader(
-  url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-  limit=Limit(
-    max_concurrency=4,
-    max_join=4
-  ),  # concurrency
-  timeout=1000,
-  # You are advised to set a longer timeout period for large file fragments because large file fragments exert pressure on the peer server
-  dynamic_concurrency=True,
-  save_path='QQ9.7.17.29225.exe'
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    limit=Limit(
+        max_concurrency=4,
+        max_join=4
+    ),  # concurrency
+    timeout=1000,
+    # You are advised to set a longer timeout period for large file fragments because large file fragments exert pressure on the peer server
+    dynamic_concurrency=True,
+    save_path='QQ9.7.17.29225.exe'
 )
 # Files larger than this size are downloaded in fragments
 download.DISTINGUISH_SIZE = 100 * 1024 * 1024
@@ -69,6 +72,8 @@ options:
 
 # Update log
 
+- V 0.2.6
+  - 修改分片下载中文件写入为异步
 - V 0.2.5
     - Fix known bugs
 - V 0.2.4
