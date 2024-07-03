@@ -4,6 +4,7 @@ from yundownload import YunDownloader, Limit
 from hashlib import sha256, md5
 from pathlib import Path
 import logging
+from concurrent.futures import ProcessPoolExecutor
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,6 +14,7 @@ logging.basicConfig(
         logging.StreamHandler(),
     ],
 )
+
 
 def file2sha256(path: Path):
     sha = sha256()
@@ -43,25 +45,28 @@ def gzip_check(filepath: Path):
         return False
 
 
-def main():
+def main(url: str):
     yun = YunDownloader(
-        url='https://hgdownload2.soe.ucsc.edu/gbdb/mm9/bbi/wgEncodeCshlLongRnaSeqAdrenalAdult8wksAlnRep2V2.bam',
-        save_path='./data/wgEncodeCshlLongRnaSeqAdrenalAdult8wksAlnRep2V2.bam',
+        url=url,
+        save_path='brainchromatin/{}'.format(url.split('/')[-1]),
         limit=Limit(
-            max_concurrency=16,
-            max_join=16
+            max_concurrency=8,
+            max_join=10
         ),
         headers={'Accept-Encoding': 'identity'},
         retries=100,
-        timeout=400
-        # stream=True
+        timeout=400,
+        stream=True
     )
     # yun.DISTINGUISH_SIZE = 10 * 1024 * 1024
     # yun.CHUNK_SIZE = 10 * 1024 * 1024
-    yun.run()
+    yun.run(error_retry=2)
     # gzip_check(Path('./data/rnacentral_rfam_annotations.tsv.gz'))
     # file2md5(Path('./data/rnacentral_species_specific_ids.fasta.gz'))
 
 
 if __name__ == '__main__':
-    main()
+    with ProcessPoolExecutor(max_workers=6) as executor:
+        with open('links.txt', 'r', encoding='utf-8') as f:
+            for line in f.readlines():
+                executor.submit(main, line.replace('\n', ''))
