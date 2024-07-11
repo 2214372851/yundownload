@@ -71,7 +71,8 @@ options:
 ```
 
 # Update log
-
+- V 0.2.10
+  - Agent added to support proxy
 - V 0.2.9
   - Fix known bugs
 - V 0.2.8

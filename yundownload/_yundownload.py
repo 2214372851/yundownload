@@ -72,6 +72,7 @@ class YunDownloader:
                  update_callable: Callable = None,
                  params: dict = None,
                  auth: httpx.BasicAuth = None,
+                 proxies: dict = None,
                  timeout: int = 200,
                  headers: dict = None,
                  cookies: dict = None,
@@ -81,6 +82,7 @@ class YunDownloader:
                  verify: bool = True,
                  cli: bool = False):
         self.__update_callable = update_callable
+        self.proxies = proxies
         self.loop: asyncio.AbstractEventLoop | None = None
         self.auth: httpx.BasicAuth | None = auth
         self.limit = limit
@@ -115,6 +117,7 @@ class YunDownloader:
                 cookies=self.cookies,
                 params=self.params,
                 auth=self.auth,
+                mounts=self.proxies,
                 verify=self.verify,
                 transport=httpx.HTTPTransport(retries=self.retries),
                 follow_redirects=True) as client:
@@ -194,6 +197,7 @@ class YunDownloader:
 
         async with httpx.AsyncClient(
                 timeout=self.timeout,
+                mounts=self.proxies,
                 headers=self.headers,
                 cookies=self.cookies,
                 params=self.params,
@@ -260,6 +264,7 @@ class YunDownloader:
         with httpx.Client(
                 timeout=self.timeout,
                 headers=self.headers,
+                mounts=self.proxies,
                 cookies=self.cookies,
                 auth=self.auth,
                 verify=self.verify,
