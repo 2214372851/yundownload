@@ -263,6 +263,7 @@ class YunDownloader:
                 cookies=self.cookies,
                 auth=self.auth,
                 verify=self.verify,
+                follow_redirects=True,
                 transport=httpx.HTTPTransport(retries=self.retries),
                 max_redirects=self.max_redirects) as client:
             headers = {}
