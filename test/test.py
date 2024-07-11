@@ -45,8 +45,8 @@ def gzip_check(filepath: Path):
 
 def main():
     yun = YunDownloader(
-        url='https://hgdownload2.soe.ucsc.edu/gbdb/mm9/bbi/wgEncodeCshlLongRnaSeqAdrenalAdult8wksAlnRep2V2.bam',
-        save_path='./data/wgEncodeCshlLongRnaSeqAdrenalAdult8wksAlnRep2V2.bam',
+        url='https://download.cncb.ac.cn/gwh/gwh.tar.gz',
+        save_path='./data/gwh.tar.gz',
         limit=Limit(
             max_concurrency=16,
             max_join=16
