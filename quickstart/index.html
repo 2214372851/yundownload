@@ -379,6 +379,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      代理
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -507,6 +516,15 @@
   <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       证书
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      代理
     </span>
   </a>
   
@@ -675,6 +693,20 @@ download = YunDownloader(
     url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
     save_path='QQ9.7.17.29225.exe',
     verify=False
+)
+</code></pre>
+<h2 id="_12">代理</h2>
+<pre><code class="language-python">from yundownload import YunDownloader
+import httpx
+
+proxies = {
+    &quot;http://&quot;: httpx.HTTPTransport(proxy=&quot;http://localhost:8030&quot;),
+    &quot;https://&quot;: httpx.HTTPTransport(proxy=&quot;http://localhost:8031&quot;),
+}
+download = YunDownloader(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe',
+    proxies=proxies
 )
 </code></pre>
 
