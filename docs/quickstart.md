@@ -200,3 +200,19 @@ download = YunDownloader(
     verify=False
 )
 ```
+
+## 代理
+```python
+from yundownload import YunDownloader
+import httpx
+
+proxies = {
+    "http://": httpx.HTTPTransport(proxy="http://localhost:8030"),
+    "https://": httpx.HTTPTransport(proxy="http://localhost:8031"),
+}
+download = YunDownloader(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe',
+    proxies=proxies
+)
+```

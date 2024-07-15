@@ -96,7 +96,8 @@ class YunDownloader:
         self.save_path = Path(save_path)
         self.save_path.parent.mkdir(exist_ok=True, parents=True)
         self.timeout = timeout
-        self.headers = headers if headers else {}
+        self.headers = {'Content-Encoding': 'identity'}
+        self.headers.update(headers if headers else {})
         self.cookies = cookies
         self.params = params
         self.stream = stream

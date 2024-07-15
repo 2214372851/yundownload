@@ -71,6 +71,8 @@ options:
 ```
 
 # Update log
+- V 0.2.11
+  - Removes the compressed portion of the default request header
 - V 0.2.10
   - Agent added to support proxy
 - V 0.2.9
