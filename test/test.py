@@ -1,67 +1,14 @@
-import gzip
+import requests
 
-from yundownload import YunDownloader, Limit
-from hashlib import sha256, md5
-from pathlib import Path
-import logging
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] <%(name)s> [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        logging.StreamHandler(),
-    ],
-)
-
-def file2sha256(path: Path):
-    sha = sha256()
-    with path.open('rb') as f:
-        for byte in iter(lambda: f.read(1024), b""):
-            sha.update(byte)
-    return sha.hexdigest()
-
-
-def file2md5(path: Path):
-    _md5 = md5()
-    with path.open('rb') as f:
-        for byte in iter(lambda: f.read(1024), b""):
-            _md5.update(byte)
-    print(_md5.hexdigest())
-    return _md5.hexdigest()
-
-
-def gzip_check(filepath: Path):
-    try:
-        with gzip.open(filepath, 'rb') as f:
-            while f.read(1024):
-                pass
-        print('完整')
-        return True
-    except Exception as e:
-        print('file error', e)
-        return False
-
-
-def main():
-    yun = YunDownloader(
-        url='https://download.cncb.ac.cn/gwh/gwh.tar.gz',
-        save_path='./data/gwh.tar.gz',
-        limit=Limit(
-            max_concurrency=16,
-            max_join=16
-        ),
-        headers={'Accept-Encoding': 'identity'},
-        retries=100,
-        timeout=400
-        # stream=True
-    )
-    # yun.DISTINGUISH_SIZE = 10 * 1024 * 1024
-    # yun.CHUNK_SIZE = 10 * 1024 * 1024
-    yun.run()
-    # gzip_check(Path('./data/rnacentral_rfam_annotations.tsv.gz'))
-    # file2md5(Path('./data/rnacentral_species_specific_ids.fasta.gz'))
-
-
-if __name__ == '__main__':
-    main()
+# proxy = '117.42.94.219:21472'
+proxy = '106.105.218.244:80'
+proxies = {
+    'http': 'http://' + proxy,
+    'https': 'http://' + proxy,
+}
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36'
+}
+r = requests.get('https://www.baidu.com/', proxies=proxies, headers=headers, timeout=5, verify=False)
+print(r.status_code)
+print(r.text)
