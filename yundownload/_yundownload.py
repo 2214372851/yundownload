@@ -162,7 +162,7 @@ class YunDownloader:
         self.loop.close()
 
     async def __chunk_download(self, client: httpx.AsyncClient, chunk_start: int,
-                               chunk_end: int, save_path: Path):
+                               chunk_end: int | str, save_path: Path):
         await self.semaphore.acquire()
         headers = {'Range': f'bytes={chunk_start}-{chunk_end}'}
         if save_path.exists():
@@ -215,6 +215,7 @@ class YunDownloader:
                     f'{self.url} The file size exceeds the threshold of 200. Ensure the file server performance')
             for index, chunk_start in enumerate(range(0, self.content_length, self.CHUNK_SIZE)):
                 chunk_end = min(chunk_start + self.CHUNK_SIZE - 1, self.content_length)
+                if chunk_end == self.content_length: chunk_end = ''
                 save_path = self.save_path.parent / '{}--{}.distributeddownloader'.format(
                     self.save_path.stem, str(index).zfill(5))
                 logger.info(f'{self.url} slice download {index} {chunk_start} {chunk_end}')
