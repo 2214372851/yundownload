@@ -71,6 +71,8 @@ options:
 ```
 
 # Update log
+- V 0.2.13
+  - Fixed multiple file fragment download file name issue
 - V 0.2.12
   - Fixed a size issue with the last piece of the shard download file
 - V 0.2.11

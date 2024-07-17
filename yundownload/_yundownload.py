@@ -217,7 +217,7 @@ class YunDownloader:
                 chunk_end = min(chunk_start + self.CHUNK_SIZE - 1, self.content_length)
                 if chunk_end == self.content_length: chunk_end = ''
                 save_path = self.save_path.parent / '{}--{}.distributeddownloader'.format(
-                    self.save_path.stem, str(index).zfill(5))
+                    self.save_path.name.replace('.', '-'), str(index).zfill(5))
                 logger.info(f'{self.url} slice download {index} {chunk_start} {chunk_end}')
                 tasks.append(self.loop.create_task(
                     self.__chunk_download(client, chunk_start, chunk_end, save_path)))
