@@ -406,6 +406,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      进度条
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -561,6 +570,15 @@
   <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       动态并发
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      进度条
     </span>
   </a>
   
@@ -769,6 +787,17 @@ download = YunDownloader(
     url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
     save_path='QQ9.7.17.29225.exe',
     dynamic_concurrency=True
+)
+download.run()
+</code></pre>
+<h2 id="_15">进度条</h2>
+<p>Yun download 默认会禁用进度条，如果需要显示进度条，可以将 <code>cli</code> 参数设置为 <code>True</code>。</p>
+<pre><code class="language-python">from yundownload import YunDownloader
+
+download = YunDownloader(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe',
+    cli=True
 )
 download.run()
 </code></pre>
