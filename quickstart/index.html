@@ -397,6 +397,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      动态并发
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -543,6 +552,15 @@
   <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       日志
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      动态并发
     </span>
   </a>
   
@@ -740,6 +758,17 @@ logging.basicConfig(
 download = YunDownloader(
     url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
     save_path='QQ9.7.17.29225.exe'
+)
+download.run()
+</code></pre>
+<h2 id="_14">动态并发</h2>
+<p>Yun download 默认会禁用动态并发，如果需要自动处理动态并发，可以将 <code>dynamic_concurrency</code> 参数设置为 <code>True</code>。</p>
+<pre><code class="language-python">from yundownload import YunDownloader
+
+download = YunDownloader(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe',
+    dynamic_concurrency=True
 )
 download.run()
 </code></pre>
