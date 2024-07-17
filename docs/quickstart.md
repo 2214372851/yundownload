@@ -202,6 +202,7 @@ download = YunDownloader(
 ```
 
 ## 代理
+
 ```python
 from yundownload import YunDownloader
 import httpx
@@ -215,4 +216,53 @@ download = YunDownloader(
     save_path='QQ9.7.17.29225.exe',
     proxies=proxies
 )
+```
+
+## 日志
+
+```python
+from yundownload import YunDownloader
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[logging.StreamHandler()]
+)
+download = YunDownloader(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe'
+)
+download.run()
+```
+
+## 动态并发
+
+Yun download 默认会禁用动态并发，如果需要自动处理动态并发，可以将 `dynamic_concurrency` 参数设置为 `True`。
+
+```python
+from yundownload import YunDownloader
+
+download = YunDownloader(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe',
+    dynamic_concurrency=True
+)
+download.run()
+```
+
+## 进度条
+
+Yun download 默认会禁用进度条，如果需要显示进度条，可以将 `cli` 参数设置为 `True`。
+
+```python
+from yundownload import YunDownloader
+
+download = YunDownloader(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe',
+    cli=True
+)
+download.run()
 ```

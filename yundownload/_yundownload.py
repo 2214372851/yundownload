@@ -382,7 +382,9 @@ class YunDownloader:
                     self.__workflow()
                     break
                 except Exception as e:
-                    logger.error(f'{self.url} download error: {e}')
+                    logger.error(f'retry >> {self.url} download error: {e}')
+                    if self.cli:
+                        print(f'retry >> {self.url} download error: {e}')
                     flag += 1
                     if flag >= error_retry:
                         logger.warning(f'{self.url} download retry skip: {e}')

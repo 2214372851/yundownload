@@ -13,7 +13,7 @@
 
 `pip install yundownload`
 
-# Stash
+# Document
 
 [yundownload GitHub](https://github.com/2214372851/yundownload)
 
@@ -71,6 +71,8 @@ options:
 ```
 
 # Update log
+- V 0.2.14
+  - Modified the document and some prompts.
 - V 0.2.13
   - Fixed multiple file fragment download file name issue
 - V 0.2.12
