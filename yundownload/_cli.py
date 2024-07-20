@@ -12,11 +12,11 @@ def cli():
     parser.add_argument('-t', '--timeout', type=int, default=100, help='Timeout period')
     parser.add_argument('-r', '--retry', type=int, default=0, help='Retry times')
     parser.add_argument('--stream', action='store_true', default=False, help='Forced streaming')
+    parser.set_defaults(help=parser.print_help)
 
     args = parser.parse_args()
     yun = YunDownloader(
-        url=args.url,
-        save_path=args.save_path,
+
         limit=Limit(
             max_concurrency=args.max_concurrency,
             max_join=args.max_join,
@@ -25,4 +25,8 @@ def cli():
         stream=args.stream,
         cli=True
     )
-    yun.run(error_retry=args.retry)
+    yun.download(
+        url=args.url,
+        save_path=args.save_path,
+        error_retry=args.retry
+    )

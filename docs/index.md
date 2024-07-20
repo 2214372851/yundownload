@@ -83,7 +83,6 @@ Yun download 建立在 `httpx` 模块上，并为您提供：
 
 - 广泛[兼容请求的 API](https://www.python-httpx.org/compatibility/)。
 - 标准同步接口，但[如果您需要，也可以提供异步支持](https://www.python-httpx.org/async/)。
-- HTTP/1.1[和 HTTP/2 支持](https://www.python-httpx.org/http2/)。
 - 能够直接向[WSGI 应用程序](https://www.python-httpx.org/async/#calling-into-python-web-apps)
   或[ASGI 应用程序](https://www.python-httpx.org/async/#calling-into-python-web-apps)发出请求。
 - 到处都有严格的超时限制。
@@ -107,7 +106,7 @@ Yun download 建立在 `httpx` 模块上，并为您提供：
 
 ## 文档
 
-要了解所有基础知识，请转到[快速入门](quickstart.md)。
+要了解所有基础知识，请转到最新[快速入门](v3-quickstart.md)。
 
 ## 依赖项
 

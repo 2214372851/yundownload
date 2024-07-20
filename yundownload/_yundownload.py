@@ -7,12 +7,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import Thread
 from typing import Callable
-
+from concurrent.futures import ProcessPoolExecutor
 import aiofiles
 import httpx
 from tqdm import tqdm
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('yundownload')
 
 
 @dataclass
@@ -65,15 +65,13 @@ class YunDownloader:
     STREAM_SIZE = 1 * 1024 * 1024
 
     def __init__(self,
-                 url: str,
-                 save_path: str,
                  limit: Limit = Limit(),
                  dynamic_concurrency: bool = False,
                  update_callable: Callable = None,
                  params: dict = None,
                  auth: httpx.BasicAuth = None,
                  proxies: dict = None,
-                 timeout: int = 200,
+                 timeout: int = 20,
                  headers: dict = None,
                  cookies: dict = None,
                  stream: bool = False,
@@ -92,9 +90,8 @@ class YunDownloader:
         self.verify = verify
         self.max_redirects = max_redirects
         self.semaphore = _DynamicSemaphore(limit.max_concurrency)
-        self.url = url
-        self.save_path = Path(save_path)
-        self.save_path.parent.mkdir(exist_ok=True, parents=True)
+        self.url = None
+        self.save_path = None
         self.timeout = timeout
         self.headers = {'Content-Encoding': 'identity'}
         self.headers.update(headers if headers else {})
@@ -112,6 +109,7 @@ class YunDownloader:
         self.ping_state = True
 
     def __check_breakpoint(self):
+        logger.info(f'start check download method: [{self.url}]')
         with httpx.Client(
                 timeout=self.timeout,
                 headers=self.headers,
@@ -138,21 +136,21 @@ class YunDownloader:
 
     def __select_downloader(self):
         if self.save_path.exists() and self.save_path.stat().st_size == self.content_length:
-            logger.info(f'{self.url} file exists and size correct, skip download')
+            logger.info(f'file exists and size correct, skip download: [{self.url}]')
             if self.cli:
-                print(f'\n{self.url} file exists and size correct, skip download')
+                print(f'\nfile exists and size correct, skip download: [{self.url}]\n')
             return
         self.loop = asyncio.new_event_loop()
         if (not self.stream
                 and self.content_length is not None
                 and self.content_length > self.DISTINGUISH_SIZE
                 and self.is_breakpoint):
-            logger.info(f'{self.url} select slice download')
+            logger.info(f'select slice download: [{self.url}]')
             self.semaphore = _DynamicSemaphore(self.semaphore.get_permits())
             self.ping_state = True
             self.loop.run_until_complete(self.__slice_download())
         else:
-            logger.info(f'{self.url} select stream download')
+            logger.info(f'select stream download: [{self.url}]')
             stop_event = threading.Event()
             t = Thread(target=lambda: self.__heartbeat_t(stop_event), daemon=True)
             t.start()
@@ -167,7 +165,7 @@ class YunDownloader:
         headers = {'Range': f'bytes={chunk_start}-{chunk_end}'}
         if save_path.exists():
             if save_path.stat().st_size == self.CHUNK_SIZE:
-                logger.info(f'{save_path} chunk {chunk_start}-{chunk_end} skip')
+                logger.info(f'chunk [{chunk_start}:{chunk_end}] skip: [{save_path}]')
                 self.download_count += self.CHUNK_SIZE
                 self.semaphore.release()
                 return True
@@ -187,7 +185,7 @@ class YunDownloader:
                     self._response_time_deque.append(res.elapsed.seconds)
                 return True
             except Exception as e:
-                logger.error(f'{save_path} chunk download error: {e}')
+                logger.error(f'chunk download error: [{save_path}] error: {e}')
                 return False
             finally:
                 self.semaphore.release()
@@ -218,7 +216,8 @@ class YunDownloader:
                 if chunk_end == self.content_length: chunk_end = ''
                 save_path = self.save_path.parent / '{}--{}.distributeddownloader'.format(
                     self.save_path.name.replace('.', '-'), str(index).zfill(5))
-                logger.info(f'{self.url} slice download {index} {chunk_start} {chunk_end}')
+                logger.info(
+                    f'slice download: [{chunk_start}:{chunk_end}] slice index: [{index}] file url: [{self.url}]')
                 tasks.append(self.loop.create_task(
                     self.__chunk_download(client, chunk_start, chunk_end, save_path)))
 
@@ -226,14 +225,14 @@ class YunDownloader:
             self.ping_state = False
             await ping
             if all(tasks):
-                logger.info(f'{self.save_path} Download all slice success')
+                logger.info(f'Download all slice success: [{self.save_path}]')
                 merge_state = await self.__merge_chunk()
                 if not merge_state:
-                    raise Exception(f'{self.save_path} Merge all slice error')
+                    raise Exception(f'Merge all slice error: [{self.save_path}]')
                 logger.info(f'Success download file, run time: {int(time.time() - self.start_time)} S')
             else:
-                logger.error(f'{self.save_path} Download all slice error')
-                raise Exception(f'{self.save_path} Download all slice error')
+                logger.error(f'Download all slice error: [{self.save_path}]')
+                raise Exception(f'Download all slice error: [{self.save_path}]')
 
     async def __merge_chunk(self):
         slice_files = list(self.save_path.parent.glob(f'*{self.save_path.stem}*.distributeddownloader'))
@@ -256,10 +255,10 @@ class YunDownloader:
             for slice_file in slice_files:
                 slice_file.unlink()
 
-            logger.info(f'{self.save_path} merge chunk success')
+            logger.info(f'merge chunk success: [{self.save_path}]')
             return True
         except Exception as e:
-            logger.error(f'{self.save_path} merge chunk error: {e}')
+            logger.error(f'merge chunk: [{self.save_path}] error: {e}')
             return False
 
     def __stream_download(self):
@@ -279,16 +278,16 @@ class YunDownloader:
                 if self.save_path.exists() and self.save_path.stat().st_size < self.content_length:
                     headers['Range'] = f'bytes={self.save_path.stat().st_size}-'
                     self.download_count = self.save_path.stat().st_size
-                    logger.info(f'{self.url} breakpoint download')
+                    logger.info(f'breakpoint download: [{self.url}]')
                 elif self.save_path.exists() and self.save_path.stat().st_size == self.content_length:
-                    logger.info(f'{self.url} download success')
+                    logger.info(f'download success: [{self.url}]')
                     return
                 else:
                     self.save_path.unlink(missing_ok=True)
-                    logger.info(f'{self.url} new download')
+                    logger.info(f'new download: [{self.url}]')
             else:
                 self.save_path.unlink(missing_ok=True)
-                logger.info(f'{self.url} new download')
+                logger.info(f'new download: [{self.url}]')
             with client.stream('GET', self.url, headers=headers) as res:
                 try:
                     res.raise_for_status()
@@ -296,9 +295,9 @@ class YunDownloader:
                         for chunk in res.iter_bytes(chunk_size=self.STREAM_SIZE):
                             f.write(chunk)
                             self.download_count += len(chunk)
-                    logger.info(f'{self.save_path} stream download success')
+                    logger.info(f'stream download success: [{self.save_path}]')
                 except Exception as e:
-                    logger.error(f'{self.url} stream download error: {e}')
+                    logger.error(f'stream download: [{self.url}] error: {e}')
                     raise e
 
     async def __heartbeat(self):
@@ -306,7 +305,7 @@ class YunDownloader:
             try:
                 await asyncio.sleep(self.HEARTBEAT_SLEEP)
                 if self.download_count == 0:
-                    logger.info(f'{self.url} heartbeat: wait download')
+                    logger.info(f'heartbeat: wait download: [{self.url}]')
                     continue
                 progress = (self.download_count / self.content_length) if self.content_length is not None else -1
                 gap = self.download_count - self.last_count
@@ -343,7 +342,7 @@ class YunDownloader:
         while not stop_event.is_set():
             time.sleep(self.HEARTBEAT_SLEEP)
             if self.download_count == 0:
-                logger.info(f'{self.url} heartbeat: wait download')
+                logger.info(f'heartbeat: wait download: [{self.url}]')
                 continue
             progress = (self.download_count / self.content_length) if self.content_length is not None else -1
             gap = self.download_count - self.last_count
@@ -369,12 +368,13 @@ class YunDownloader:
         logger.info("Task is cancelling...")
 
     def __workflow(self):
-        logger.info(f'{self.url} workflow start')
+        logger.info(f'workflow start: [{self.url}]')
         self.download_count = 0
         self.__check_breakpoint()
         self.__select_downloader()
 
-    def run(self, error_retry: int | bool = False):
+    def __run(self, error_retry: int | bool = False):
+        self.save_path.parent.mkdir(exist_ok=True, parents=True)
         if isinstance(error_retry, int) and error_retry > 0:
             flag = 0
             while True:
@@ -391,3 +391,31 @@ class YunDownloader:
                         raise e
         else:
             self.__workflow()
+
+    def download(self,
+                 url: str,
+                 save_path: str,
+                 error_retry: int | bool = False,
+                 params: dict = None,
+                 auth: httpx.BasicAuth = None,
+                 proxies: dict = None,
+                 timeout: int = None,
+                 headers: dict = None,
+                 cookies: dict = None,
+                 stream: bool = None):
+        if params is not None:
+            self.params = params
+        if auth is not None:
+            self.auth = auth
+        if proxies is not None:
+            self.proxies = proxies
+        if timeout is not None:
+            self.timeout = timeout
+        if cookies is not None:
+            self.cookies = cookies
+        if stream is not None:
+            self.stream = stream
+        self.headers.update(headers if headers else {})
+        self.url = url
+        self.save_path = Path(save_path)
+        self.__run(error_retry)
