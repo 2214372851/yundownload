@@ -649,9 +649,11 @@
 <p>但是实例之间的连接又是独立的，就导致每次实例都会创建连接池，这对服务器照成了压力，同时也降低了代码的执行效率</p>
 <p>所以我们不得不推翻之前的API</p>
 </blockquote>
-<p>变化如下：
-- <code>run</code> 方法已弃用，请使用 <code>download</code> 方法。
-- <code>YunDownloader</code> 实例化时不再传递文件链接和保存路径，请在 <code>download</code> 方法中传递。</p>
+<p>变化如下：</p>
+<ul>
+<li><code>run</code> 方法已弃用，请使用 <code>download</code> 方法。</li>
+<li><code>YunDownloader</code> 实例化时不再传递文件链接和保存路径，请在 <code>download</code> 方法中传递。</li>
+</ul>
 <p>首先，从导入 YunDownloader 开始：</p>
 <pre><code>&gt;&gt;&gt; from yundownload import YunDownloader
 </code></pre>
