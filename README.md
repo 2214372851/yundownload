@@ -22,8 +22,7 @@
 ```python
 from yundownload import YunDownloader, Limit
 
-download = YunDownloader(
-    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+yun = YunDownloader(
     limit=Limit(
         max_concurrency=4,
         max_join=4
@@ -31,16 +30,18 @@ download = YunDownloader(
     timeout=1000,
     # You are advised to set a longer timeout period for large file fragments because large file fragments exert pressure on the peer server
     dynamic_concurrency=True,
-    save_path='QQ9.7.17.29225.exe'
 )
 # Files larger than this size are downloaded in fragments
-download.DISTINGUISH_SIZE = 100 * 1024 * 1024
+yun.DISTINGUISH_SIZE = 100 * 1024 * 1024
 # The size of each shard at download time
-download.CHUNK_SIZE = 100 * 1024 * 1024
+yun.CHUNK_SIZE = 100 * 1024 * 1024
 # Heartbeat status detection time
-download.HEARTBEAT_SLEEP = 1
+yun.HEARTBEAT_SLEEP = 1
 # Run task. error_retry: Number of retries when an error occurs
-download.run(error_retry=3)
+yun.download(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe',
+    error_retry=3)
 ```
 
 ## Command line tool
@@ -71,24 +72,31 @@ options:
 ```
 
 # Update log
+
+- V 0.3.0
+    - To optimize the performance of the code, need to pay attention to at the same time, in this version and later
+      versions of the API changes, details please refer to
+      the [official documentation](https://2214372851.github.io/yundownload/) description of V0.3 version
+- V 0.2.15
+    - Big change, remove 'run' function, add 'download' function. See the documentation.
 - V 0.2.14
-  - Modified the document and some prompts.
+    - Modified the document and some prompts.
 - V 0.2.13
-  - Fixed multiple file fragment download file name issue
+    - Fixed multiple file fragment download file name issue
 - V 0.2.12
-  - Fixed a size issue with the last piece of the shard download file
+    - Fixed a size issue with the last piece of the shard download file
 - V 0.2.11
-  - Removes the compressed portion of the default request header
+    - Removes the compressed portion of the default request header
 - V 0.2.10
-  - Agent added to support proxy
+    - Agent added to support proxy
 - V 0.2.9
-  - Fix known bugs
+    - Fix known bugs
 - V 0.2.8
-  - Fix known bugs and add warnings for subsequent optimization of large file shards
+    - Fix known bugs and add warnings for subsequent optimization of large file shards
 - V 0.2.7
-  - Fix known bugs
+    - Fix known bugs
 - V 0.2.6
-  - None Example Change the asynchronous writing of files in fragment download
+    - None Example Change the asynchronous writing of files in fragment download
 - V 0.2.5
     - Fix known bugs
 - V 0.2.4
