@@ -1,6 +1,7 @@
 import argparse
 
 from . import YunDownloader, Limit
+from ._version import __version__
 
 
 def cli():
@@ -12,11 +13,14 @@ def cli():
     parser.add_argument('-t', '--timeout', type=int, default=100, help='Timeout period')
     parser.add_argument('-r', '--retry', type=int, default=0, help='Retry times')
     parser.add_argument('--stream', action='store_true', default=False, help='Forced streaming')
+    parser.add_argument('--wget', action='store_true', default=False, help='Carry the wget request header')
+    parser.add_argument('-V', '--version', action='version', version=f'%(prog)s {__version__}',
+                        help='Show the version number and exit')
     parser.set_defaults(help=parser.print_help)
 
     args = parser.parse_args()
     yun = YunDownloader(
-
+        headers={'User-Agent': 'Wget/1.12 (linux-gnu)'} if args.wget else None,
         limit=Limit(
             max_concurrency=args.max_concurrency,
             max_join=args.max_join,

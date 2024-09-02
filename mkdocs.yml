@@ -21,3 +21,4 @@ plugins:
 # mkdocs gh-deploy 提交到git pages
 # pip install mkdocs
 # pip install mkdocs-material
+# pip install mkdocs-git-revision-date-localized-plugin

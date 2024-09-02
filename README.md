@@ -50,7 +50,7 @@ yun.download(
 
 ```shell
 yundownload -h
-usage: yundownload [-h] [-mc MAX_CONCURRENCY] [-mj MAX_JOIN] [-t TIMEOUT] [-r RETRY] [--stream] url save_path
+usage: yundownload [-h] [-mc MAX_CONCURRENCY] [-mj MAX_JOIN] [-t TIMEOUT] [-r RETRY] [--stream] [--wget] [-V] url save_path
 
 Yun Downloader
 
@@ -69,10 +69,14 @@ options:
   -r RETRY, --retry RETRY
                         Retry times
   --stream              Forced streaming
+  --wget                Carry the wget request header
+  -V, --version         Show the version number and exit
 ```
 
 # Update log
-
+- V 0.3.1
+  - Added version attribute to the package. 
+    The command line tool wget parameter has also been added to give the request a default header
 - V 0.3.0
     - To optimize the performance of the code, need to pay attention to at the same time, in this version and later
       versions of the API changes, details please refer to
