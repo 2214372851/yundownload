@@ -1,6 +1,6 @@
-from yundownload import YunDownloader
-
 import logging
+
+from yundownload import YunDownloader
 
 logger = logging.getLogger('yundownload')
 logger.setLevel(logging.INFO)
@@ -9,7 +9,6 @@ ch.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s @ %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-
 
 yun = YunDownloader(cli=True)
 

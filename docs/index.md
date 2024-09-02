@@ -10,7 +10,7 @@
 
 ------
 
-[![PyPI version](https://badge.fury.io/py/yundownload.svg)](https://badge.fury.io/py/yundownload)
+[![PyPI version](https://img.shields.io/pypi/v/yundownload)](https://pypi.org/project/yundownload/)
 
 *Python 简易高效的文件下载器。*
 
@@ -26,8 +26,8 @@ Yun download 是 Python 3 的文件下载器，它提供流式下载和文件分
 
 ```shell
 >>> from yundownload import YunDownloader
->>> y = YunDownloader('https://bing.com', './bing.html')
->>> y.run()
+>>> y = YunDownloader()
+>>> y.download('https://bing.com', './bing.html')
 ```
 
 或者，使用命令行的方式：
