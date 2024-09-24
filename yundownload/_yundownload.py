@@ -93,7 +93,7 @@ class YunDownloader:
         self.url = None
         self.save_path = None
         self.timeout = timeout
-        self.headers = {'Content-Encoding': 'identity'}
+        self.headers = {'Content-Encoding': 'identity', 'Accept-Encoding': 'identity'}
         self.headers.update(headers if headers else {})
         self.cookies = cookies
         self.params = params
@@ -172,7 +172,10 @@ class YunDownloader:
             elif save_path.stat().st_size > self.CHUNK_SIZE:
                 save_path.unlink(missing_ok=True)
             else:
-                headers['Range'] = f'bytes={chunk_start + save_path.stat().st_size}-{chunk_end}'
+                chunk_start_size = chunk_start + save_path.stat().st_size
+                headers['Range'] = f'bytes={chunk_start_size}-{chunk_end}'
+                if not chunk_end and chunk_start_size == self.content_length:
+                    return True
 
         async with client.stream('GET', self.url, headers=headers) as res:
             try:
@@ -235,22 +238,18 @@ class YunDownloader:
                 raise Exception(f'Download all slice error: [{self.save_path}]')
 
     async def __merge_chunk(self):
-        slice_files = list(self.save_path.parent.glob(f'*{self.save_path.stem}*.distributeddownloader'))
+        slice_files = list(self.save_path.parent.glob(f'*{self.save_path.name.replace('.', '-')}*.distributeddownloader'))
         slice_files.sort(key=lambda x: int(x.stem.split('--')[1]))
 
         try:
             with self.save_path.open('wb') as wf:
-                # 遍历所有分片文件
                 for slice_file in slice_files:
-                    # 以二进制读取模式打开分片文件
+                    logger.info(f'merge chunk: [{slice_file}]')
                     with slice_file.open('rb') as rf:
-                        # 不断读取分片文件的内容，直到读取完毕
                         while True:
                             chunk = rf.read(4096)
-                            # 如果读取到的块为空，则表示读取完毕，退出循环
                             if not chunk:
                                 break
-                            # 将读取到的块写入到目标文件中
                             wf.write(chunk)
             for slice_file in slice_files:
                 slice_file.unlink()
