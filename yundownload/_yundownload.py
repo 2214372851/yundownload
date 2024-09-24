@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import Thread
 from typing import Callable
-from concurrent.futures import ProcessPoolExecutor
 import aiofiles
 import httpx
 from tqdm import tqdm
@@ -80,6 +79,7 @@ class YunDownloader:
                  verify: bool = True,
                  cli: bool = False):
         self.__update_callable = update_callable
+        self.m3u8 = False
         self.proxies = proxies
         self.loop: asyncio.AbstractEventLoop | None = None
         self.auth: httpx.BasicAuth | None = auth
@@ -380,7 +380,7 @@ class YunDownloader:
             while True:
                 try:
                     self.__workflow()
-                    break
+                    return self.save_path
                 except Exception as e:
                     logger.error(f'retry >> {self.url} download error: {e}')
                     if self.cli:
@@ -391,6 +391,7 @@ class YunDownloader:
                         raise e
         else:
             self.__workflow()
+            return self.save_path
 
     def download(self,
                  url: str,
@@ -418,4 +419,8 @@ class YunDownloader:
         self.headers.update(headers if headers else {})
         self.url = url
         self.save_path = Path(save_path)
+        self.download_count = 0
+        self.last_count = 0
+        self.start_time = time.time()
+        self._last_concurrency = -1
         self.__run(error_retry)
