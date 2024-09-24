@@ -217,8 +217,9 @@ class YunDownloader:
             for index, chunk_start in enumerate(range(0, self.content_length, self.CHUNK_SIZE)):
                 chunk_end = min(chunk_start + self.CHUNK_SIZE - 1, self.content_length)
                 if chunk_end == self.content_length: chunk_end = ''
+                slice_flag_name = self.save_path.name.replace('.', '-')
                 save_path = self.save_path.parent / '{}--{}.distributeddownloader'.format(
-                    self.save_path.name.replace('.', '-'), str(index).zfill(5))
+                    slice_flag_name, str(index).zfill(5))
                 logger.info(
                     f'slice download: [{chunk_start}:{chunk_end}] slice index: [{index}] file url: [{self.url}]')
                 tasks.append(self.loop.create_task(
@@ -229,7 +230,7 @@ class YunDownloader:
             await ping
             if all(tasks):
                 logger.info(f'Download all slice success: [{self.save_path}]')
-                merge_state = await self.__merge_chunk()
+                merge_state = await self.__merge_chunk(slice_flag_name)
                 if not merge_state:
                     raise Exception(f'Merge all slice error: [{self.save_path}]')
                 logger.info(f'Success download file, run time: {int(time.time() - self.start_time)} S')
@@ -237,8 +238,8 @@ class YunDownloader:
                 logger.error(f'Download all slice error: [{self.save_path}]')
                 raise Exception(f'Download all slice error: [{self.save_path}]')
 
-    async def __merge_chunk(self):
-        slice_files = list(self.save_path.parent.glob(f'*{self.save_path.name.replace('.', '-')}*.distributeddownloader'))
+    async def __merge_chunk(self, slice_flag_name):
+        slice_files = list(self.save_path.parent.glob(f'*{slice_flag_name}*.distributeddownloader'))
         slice_files.sort(key=lambda x: int(x.stem.split('--')[1]))
 
         try:
