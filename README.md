@@ -74,6 +74,12 @@ options:
 ```
 
 # Update log
+- V 0.3.4
+  - Fixed event loop duplicate creation
+- V 0.3.3
+  - Fix progress bar not reset
+- V 0.3.2
+  - Fixed the file length inconsistency caused by the request header
 - V 0.3.1
   - Added version attribute to the package. 
     The command line tool wget parameter has also been added to give the request a default header
