@@ -140,7 +140,10 @@ class YunDownloader:
             if self.cli:
                 print(f'\nfile exists and size correct, skip download: [{self.url}]\n')
             return
-        self.loop = asyncio.new_event_loop()
+        try:
+            self.loop = asyncio.get_event_loop()
+        except Exception as e:
+            self.loop = asyncio.new_event_loop()
         if (not self.stream
                 and self.content_length is not None
                 and self.content_length > self.DISTINGUISH_SIZE
