@@ -1,7 +1,7 @@
 import argparse
 
-from . import YunDownloader, Limit
-from ._version import __version__
+from yundownload import YunDownloader, Limit
+from yundownload._version import __version__
 
 
 def cli():

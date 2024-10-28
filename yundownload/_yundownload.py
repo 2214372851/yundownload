@@ -140,18 +140,19 @@ class YunDownloader:
             if self.cli:
                 print(f'\nfile exists and size correct, skip download: [{self.url}]\n')
             return
-        try:
-            self.loop = asyncio.get_event_loop()
-        except Exception as e:
-            self.loop = asyncio.new_event_loop()
+
         if (not self.stream
                 and self.content_length is not None
                 and self.content_length > self.DISTINGUISH_SIZE
                 and self.is_breakpoint):
+            self.loop = asyncio.new_event_loop()
             logger.info(f'select slice download: [{self.url}]')
             self.semaphore = _DynamicSemaphore(self.semaphore.get_permits())
             self.ping_state = True
-            self.loop.run_until_complete(self.__slice_download())
+            try:
+                self.loop.run_until_complete(self.__slice_download())
+            finally:
+                self.loop.close()
         else:
             logger.info(f'select stream download: [{self.url}]')
             stop_event = threading.Event()
@@ -160,7 +161,6 @@ class YunDownloader:
             self.__stream_download()
             stop_event.set()
             t.join()
-        self.loop.close()
 
     async def __chunk_download(self, client: httpx.AsyncClient, chunk_start: int,
                                chunk_end: int | str, save_path: Path):
