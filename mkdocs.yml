@@ -8,6 +8,7 @@ nav:
   - 介绍: "index.md"
   - 快速入门(0.2.X): "v2-quickstart.md"
   - 快速入门(0.3.X): "v3-quickstart.md"
+  - 快速入门(0.4.X): "v4-quickstart.md"
 
 theme:
   name: material

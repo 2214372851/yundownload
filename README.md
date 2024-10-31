@@ -16,32 +16,18 @@
 # Document
 
 [yundownload GitHub](https://github.com/2214372851/yundownload)
+[yundownload Docs](https://2214372851.github.io/yundownload/)
 
 # Give an example
 
 ```python
-from yundownload import YunDownloader, Limit
+from yundownload import DownloadPools, Request
 
-yun = YunDownloader(
-    limit=Limit(
-        max_concurrency=4,
-        max_join=4
-    ),  # concurrency
-    timeout=1000,
-    # You are advised to set a longer timeout period for large file fragments because large file fragments exert pressure on the peer server
-    dynamic_concurrency=True,
-)
-# Files larger than this size are downloaded in fragments
-yun.DISTINGUISH_SIZE = 100 * 1024 * 1024
-# The size of each shard at download time
-yun.CHUNK_SIZE = 100 * 1024 * 1024
-# Heartbeat status detection time
-yun.HEARTBEAT_SLEEP = 1
-# Run task. error_retry: Number of retries when an error occurs
-yun.download(
-    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-    save_path='QQ9.7.17.29225.exe',
-    error_retry=3)
+with DownloadPools() as pool:
+    pool.push(Request(
+        url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+        save_path='./1.exe'
+    ))
 ```
 
 ## Command line tool
@@ -49,40 +35,40 @@ yun.download(
 > In version 0.1.16, a command line tool was added, which can be used as follows:
 
 ```shell
-yundownload -h
-usage: yundownload [-h] [-mc MAX_CONCURRENCY] [-mj MAX_JOIN] [-t TIMEOUT] [-r RETRY] [--stream] [--wget] [-V] url save_path
+$ yundownload --help
+
+usage: yundownload [-h] {load,download} ...
 
 Yun Downloader
 
 positional arguments:
-  url                   Download url
-  save_path             Save path, including file name
+  {load,download}
+    load           Load a request
+    download       Download a file
 
 options:
-  -h, --help            show this help message and exit
-  -mc MAX_CONCURRENCY, --max_concurrency MAX_CONCURRENCY
-                        Maximum concurrency
-  -mj MAX_JOIN, --max_join MAX_JOIN
-                        Maximum connection number
-  -t TIMEOUT, --timeout TIMEOUT
-                        Timeout period
-  -r RETRY, --retry RETRY
-                        Retry times
-  --stream              Forced streaming
-  --wget                Carry the wget request header
-  -V, --version         Show the version number and exit
+  -h, --help       show this help message and exit
+```
+
+命令行下载文件
+
+```shell
+$ yundownload download 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe' './1.exe'
+
+QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M [00:05<01:15, 2.65MB/s] 
 ```
 
 # Update log
+
 - V 0.3.4
-  - Fixed event loop duplicate creation
+    - Fixed event loop duplicate creation
 - V 0.3.3
-  - Fix progress bar not reset
+    - Fix progress bar not reset
 - V 0.3.2
-  - Fixed the file length inconsistency caused by the request header
+    - Fixed the file length inconsistency caused by the request header
 - V 0.3.1
-  - Added version attribute to the package. 
-    The command line tool wget parameter has also been added to give the request a default header
+    - Added version attribute to the package.
+      The command line tool wget parameter has also been added to give the request a default header
 - V 0.3.0
     - To optimize the performance of the code, need to pay attention to at the same time, in this version and later
       versions of the API changes, details please refer to
