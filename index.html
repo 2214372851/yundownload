@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.0253249f.min.css">
       
       
 
@@ -344,6 +344,26 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="v4-quickstart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    快速入门(0.4.X)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -440,9 +460,14 @@
 <p>使用 pip 安装 Yun download：</p>
 <p><code>$ pip install yundownload</code></p>
 <p>现在，让我们开始第一个示例：</p>
-<pre><code class="language-shell">&gt;&gt;&gt; from yundownload import YunDownloader
-&gt;&gt;&gt; y = YunDownloader()
-&gt;&gt;&gt; y.download('https://bing.com', './bing.html')
+<pre><code class="language-python">from yundownload import DownloadPools, Request
+
+
+with DownloadPools() as pool:
+    pool.push(Request(
+      url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+      save_path='./1.exe'
+    ))
 </code></pre>
 <p>或者，使用命令行的方式：</p>
 <blockquote>
@@ -450,31 +475,29 @@
 </blockquote>
 <pre><code class="language-shell">$ yundownload --help
 
-usage: yundownload [-h] [-mc MAX_CONCURRENCY] [-mj MAX_JOIN] [-t TIMEOUT] [-r RETRY] [--stream]
-                   url save_path
+usage: yundownload [-h] {load,download} ...
 
 Yun Downloader
 
 positional arguments:
-  url                   Download url
-  save_path             Save path, including file name
+  {load,download}
+    load           Load a request
+    download       Download a file
 
 options:
-  -h, --help            show this help message and exit
-  -mc MAX_CONCURRENCY, --max_concurrency MAX_CONCURRENCY
-                        Maximum concurrency
-  -mj MAX_JOIN, --max_join MAX_JOIN
-                        Maximum connection number
-  -t TIMEOUT, --timeout TIMEOUT
-                        Timeout period
-  -r RETRY, --retry RETRY
-                        Retry times
-  --stream              Forced streaming
+  -h, --help       show this help message and exit
 </code></pre>
 <p>命令行下载文件</p>
-<pre><code class="language-shell">$ yundownload 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe' './1.exe'
+<pre><code class="language-shell">$ yundownload download 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe' './1.exe'
 
 QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M [00:05&lt;01:15, 2.65MB/s] 
+</code></pre>
+<p>fyd文件命令行读取下载（只适用于简单场景）</p>
+<pre><code class="language-shell">$ yundownload load ./test.fyd
+</code></pre>
+<p>fyd文件格式</p>
+<pre><code class="language-text">save_path1&lt;fyd&gt;download_url1
+save_path2&lt;fyd&gt;download_url2
 </code></pre>
 <h2 id="_1">特征</h2>
 <p>Yun download 建立在 <code>httpx</code> 模块上，并为您提供：</p>
@@ -520,7 +543,7 @@ QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M
 <ul>
 <li><code>httpx</code>- 网络请求。</li>
 <li><code>aiofiles</code>- 异步文件读写。</li>
-<li><code>tqdm</code>-命令行进度条。</li>
+<li><code>rich</code>-命令行进度条。</li>
 <li><code>certifi</code>-SSL 证书。</li>
 <li><code>idna</code>- 国际化域名支持。</li>
 <li><code>sniffio</code>- 异步库自动检测。</li>
@@ -551,7 +574,7 @@ QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M
     <span class="md-icon" title="最后更新">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">September 2, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">2024年9月24日</span>
   </span>
 
     
@@ -602,10 +625,10 @@ QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
     
     
-      <script src="assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="assets/javascripts/bundle.83f73b43.min.js"></script>
       
     
   </body>

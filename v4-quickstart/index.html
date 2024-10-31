@@ -8,13 +8,11 @@
       
       
       
-        <link rel="canonical" href="https://2214372851.github.io/yundownload/v3-quickstart/">
+        <link rel="canonical" href="https://2214372851.github.io/yundownload/v4-quickstart/">
       
       
-        <link rel="prev" href="../v2-quickstart/">
+        <link rel="prev" href="../v3-quickstart/">
       
-      
-        <link rel="next" href="../v4-quickstart/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -22,7 +20,7 @@
     
     
       
-        <title>快速入门(0.3.X) - Yun download</title>
+        <title>快速入门(0.4.X) - Yun download</title>
       
     
     
@@ -100,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              快速入门(0.3.X)
+              快速入门(0.4.X)
             
           </span>
         </div>
@@ -254,6 +252,26 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3-quickstart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    快速入门(0.3.X)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -270,7 +288,7 @@
           
   
   <span class="md-ellipsis">
-    快速入门(0.3.X)
+    快速入门(0.4.X)
   </span>
   
 
@@ -281,7 +299,7 @@
         
   
   <span class="md-ellipsis">
-    快速入门(0.3.X)
+    快速入门(0.4.X)
   </span>
   
 
@@ -314,7 +332,7 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      连接限制
+      并发限制
     </span>
   </a>
   
@@ -431,7 +449,7 @@
         <li class="md-nav__item">
   <a href="#_15" class="md-nav__link">
     <span class="md-ellipsis">
-      动态并发
+      进度条
     </span>
   </a>
   
@@ -440,7 +458,16 @@
         <li class="md-nav__item">
   <a href="#_16" class="md-nav__link">
     <span class="md-ellipsis">
-      进度条
+      状态
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      下载状态
     </span>
   </a>
   
@@ -450,26 +477,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../v4-quickstart/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    快速入门(0.4.X)
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -512,7 +519,7 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      连接限制
+      并发限制
     </span>
   </a>
   
@@ -629,7 +636,7 @@
         <li class="md-nav__item">
   <a href="#_15" class="md-nav__link">
     <span class="md-ellipsis">
-      动态并发
+      进度条
     </span>
   </a>
   
@@ -638,7 +645,16 @@
         <li class="md-nav__item">
   <a href="#_16" class="md-nav__link">
     <span class="md-ellipsis">
-      进度条
+      状态
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      下载状态
     </span>
   </a>
   
@@ -664,119 +680,70 @@
 
 <h1 id="_1">快速开始</h1>
 <h2 id="_2">版本说明</h2>
-<p>由于在 YunDownload V0.3.x 版本中，YunDownloader 的 API 发生变化 所以抽离的两份快速开始文档。</p>
-<blockquote>
-<p>在实践中发现，YunDownload 在V0.1.x 与 V0.2.x 中每下载一个文件都会创建一个实例，其实创建实例并不是无法接受</p>
-<p>由于每次在需要下载新的文件时都会创建新的实例。</p>
-<p>但是实例之间的连接又是独立的，就导致每次实例都会创建连接池，这对服务器照成了压力，同时也降低了代码的执行效率</p>
-<p>所以我们不得不推翻之前的API</p>
-</blockquote>
+<p>由于在 YunDownload V0.4.x 版本中，YunDownloader 处于性能原因 API 发生变化 所以抽离的两份快速开始文档。</p>
 <p>变化如下：</p>
 <ul>
-<li><code>run</code> 方法已弃用，请使用 <code>download</code> 方法。</li>
-<li><code>YunDownloader</code> 实例化时不再传递文件链接和保存路径，请在 <code>download</code> 方法中传递。</li>
+<li><code>YunDownloader</code> API已经移除采用全新实现</li>
+<li>现在添加下载任务不会阻塞主线程，可以实现多文件异步下载</li>
 </ul>
-<p>首先，从导入 YunDownloader 开始：</p>
-<pre><code>&gt;&gt;&gt; from yundownload import YunDownloader
-</code></pre>
-<p>现在，让我们尝试获实例一个下载器。</p>
-<pre><code>&gt;&gt;&gt; download = YunDownloader()
-</code></pre>
-<p>然后，我们需要启动下载器：</p>
-<pre><code>&gt;&gt;&gt; download.download(url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe', save_path='QQ9.7.17.29225.exe')
-</code></pre>
-<h2 id="_3">连接限制</h2>
+<h2 id="_3">并发限制</h2>
 <p>对于大型资源下载，您可能需要使用对本地的连接限制来避免文件服务器过载。</p>
 <p>您可以通过以下方式进行限制......</p>
-<pre><code class="language-python">from yundownload import YunDownloader, Limit
+<pre><code class="language-python">from yundownload import DownloadPools
 
-download = YunDownloader(
-    limit=Limit(
-        max_concurrency=4,
-        max_join=8
-    )
-)
-download.download(
-    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-    save_path='QQ9.7.17.29225.exe'
-)
+with DownloadPools(max_workers=5) as pool:
+    ...
 </code></pre>
-<blockquote>
-<p><code>limit</code> 参数只对文件分片下载有用，其中 <code>max_concurrency</code> 为最大并发数，<code>max_join</code> 为最大连接数。</p>
-</blockquote>
 <h2 id="_4">状态回调</h2>
-<p>在某些情况下我们需要显示现在的下载进度等信息，可以通过回调实现进度的刷新。</p>
-<p>回调函数需要包含两个参数 <code>state</code> 和  <code>meta</code>，其中 <code>state</code> 为当前的状态，例如进度等信息则在 <code>meta</code> 中。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<p>在某些情况下我们需要下载成功或失败时完成后续操作。</p>
+<pre><code class="language-python">from yundownload import Request
 
-
-def state_callback(state, meta):
-    print(state, meta)
-
-
-download = YunDownloader(
-    update_callable=state_callback
+Request(
+    url='',
+    save_path='',
+    success_callback=print,
+    error_callback=print
 )
 </code></pre>
 <h2 id="_5">请求传参</h2>
-<p>目前 Yun download 只支持 <code>GET</code> 请求的文件下载，所以在请求传参中只有 <code>params</code>。</p>
-<p>你可以在实例化下载器时传递全局参数，也可以在 <code>download</code> 方法中传递。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<p>目前 Yun download 可以在 <code>Request</code> 对象中传递。</p>
+<pre><code class="language-python">from yundownload import DownloadPools, Request
 
-download = YunDownloader(
-    params={
-        'p1': '1'
-    }
-)
-
-download.download(
-    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-    save_path='QQ9.7.17.29225.exe',
-    params={'p2': '2'}
-)
+with DownloadPools() as pool:
+    pool.push(Request(
+        url='',
+        save_path='',
+        params={}
+    ))
 </code></pre>
 <h2 id="_6">认证</h2>
 <p>对于部分需要在请求中校验身份信息的，需要通过 <code>auth</code> 携带身份信息。</p>
-<p>你可以在实例化下载器时传递全局参数，也可以在 <code>download</code> 方法中传递。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
-from httpx import BasicAuth
+<pre><code class="language-python">from yundownload import Auth, Request
 
-download = YunDownloader(
-    auth=BasicAuth(username='root', password='12345')
-)
-download.download(
-    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-    save_path='QQ9.7.17.29225.exe',
-    auth=BasicAuth(username='root', password='12345')
+Request(
+    url='',
+    save_path='',
+    auth=Auth(username='', password='')
 )
 </code></pre>
 <h2 id="_7">超时</h2>
-<p>在不同网络或不同站点下，由于网络波动、资源限制等问题需要改动超时时间，默认为 <code>200</code> 秒。</p>
+<p>在不同网络或不同站点下，由于网络波动、资源限制等问题需要改动超时时间，默认为 <code>20</code> 秒。</p>
 <p>由于初衷是大文件下载，对于小文件可适当修改时间。</p>
-<p>你可以在实例化下载器时传递全局参数，也可以在 <code>download</code> 方法中传递。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<p>你可以在实例化下载器时传递全局参数，也可以在 <code>Request</code> 对象中传递。</p>
+<pre><code class="language-python">from yundownload import Request
 
-download = YunDownloader(
-
-    timeout=60
-)
-download.run(
-    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-    save_path='QQ9.7.17.29225.exe',
-    timeout=60
+Request(
+    url='',
+    save_path='',
+    timeout=20
 )
 </code></pre>
 <h2 id="_8">请求头</h2>
 <p>可以通过设置请求头来为请求携带一些信息如：<code>cookies</code> 、<code>Content-Type</code>等。</p>
-<p>你可以在实例化下载器时传递全局参数，也可以在 <code>download</code> 方法中传递。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<p>你可以在实例化下载器时传递全局参数，也可以在 <code>Request</code> 对象中传递。</p>
+<pre><code class="language-python">from yundownload import Request
 
-download = YunDownloader(
-    headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
-    }
-)
-download.download(
+Request(
     url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
     save_path='QQ9.7.17.29225.exe',
     headers={'token': '***'}
@@ -784,15 +751,10 @@ download.download(
 </code></pre>
 <h2 id="cookies">Cookies</h2>
 <p>当然你也可以将 <code>cookies</code> 放到请求头中。</p>
-<p>你可以在实例化下载器时传递全局参数，也可以在 <code>download</code> 方法中传递。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<p>你可以在实例化下载器时传递全局参数，也可以在 <code>Request</code> 对象中传递。</p>
+<pre><code class="language-python">from yundownload import Request
 
-download = YunDownloader(
-    cookies={
-        'MUID': '1BC5BF370D78698B21F8AB910C1E6863'
-    }
-)
-download.download(
+Request(
     url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
     save_path='QQ9.7.17.29225.exe',
     cookies={'**': '***'}
@@ -800,90 +762,73 @@ download.download(
 </code></pre>
 <h2 id="_9">流模式</h2>
 <p>默认模式为根据文件大小自动选择分片下载或流式限制，如果需要强制使用流模式，可以设置 <code>stream</code> 参数为 <code>True</code>。</p>
-<p>你可以在实例化下载器时传递全局参数，也可以在 <code>download</code> 方法中传递。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<p>你可以在实例化下载器时传递全局参数，也可以在 <code>Request</code> 对象中设置。</p>
+<pre><code class="language-python">from yundownload import Request
 
-download = YunDownloader(
-    stream=True
-)
-download.download(
+request = Request(
     url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-    save_path='QQ9.7.17.29225.exe',
-    stream=True
+    save_path='QQ9.7.17.29225.exe'
 )
+request.stream = True
 </code></pre>
 <h2 id="_10">重定向</h2>
-<p>默认情况下，YunDownloader 会自动处理重定向，如果需要禁用重定向，可以将 <code>max_redirects</code> 参数设置为 <code>0</code>。
+<p>默认情况下，YunDownloader 会自动处理重定向，如果需要禁用重定向，可以将 <code>follow_redirects</code> 参数设置为 <code>False</code>。
 否则就是最大重定向次数。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<pre><code class="language-python">from yundownload import Request
 
-download = YunDownloader(
-    max_redirects=0
+request = Request(
+    url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+    save_path='QQ9.7.17.29225.exe',
+    follow_redirects=True
 )
 </code></pre>
 <h2 id="_11">错误重试</h2>
-<p>第一层连接的错误重试默认开启，第二层连接的错误重试默认关闭。
-YunDownloader 默认会自动重试下载，如果需要禁用重试，可以将 <code>error_retry</code> 参数设置为 <code>0</code> 或 <code>False</code>。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<p>YunDownloader 默认会自动重试下载，如果需要禁用重试，可以将 <code>retry</code> 参数设置为 <code>1</code> 或不传递。</p>
+<pre><code class="language-python">from yundownload import DownloadPools, Retry
 
-download = YunDownloader(
-    # 第一层连接重试
-    retries=10
-)
-# 第二层下载重试
-download.run(error_retry=2)
-
+with DownloadPools(retry=Retry(retry=2, retry_delay=10, retry_connect=10)) as poll:
+    ...
 </code></pre>
 <h2 id="_12">证书</h2>
 <p>Yun download 默认会自动处理证书，如果需要禁用证书，可以将 <code>verify</code> 参数设置为 <code>False</code>。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<pre><code class="language-python">from yundownload import DownloadPools, Retry
 
-download = YunDownloader(
-    verify=False
-)
+with DownloadPools(verify=False) as poll:
+    ...
 </code></pre>
 <h2 id="_13">代理</h2>
-<pre><code class="language-python">from yundownload import YunDownloader
-import httpx
+<pre><code class="language-python">from yundownload import DownloadPools, Proxies
 
-proxies = {
-    &quot;http://&quot;: httpx.HTTPTransport(proxy=&quot;http://localhost:8030&quot;),
-    &quot;https://&quot;: httpx.HTTPTransport(proxy=&quot;http://localhost:8031&quot;),
-}
-download = YunDownloader(
-    proxies=proxies
-)
+with DownloadPools(proxies=Proxies(http='http://127.0.0.1:7890', https='http://127.0.0.1:7890')) as poll:
+    ...
 </code></pre>
 <h2 id="_14">日志</h2>
-<p>Yun download 默认会禁用日志，如果需要显示日志，可以将 <code>logger</code> 参数设置为 <code>logging.getLogger('yundownload')</code>，并输出到控制台。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
-import logging
+<p>Yun download 默认会禁用日志，如果需要显示日志，可以调用 <code>show_log</code>，并输出到控制台， <code>write_log(filepath)</code> 输出到文件，
+<code>logger</code> 获取日志对象。</p>
+<pre><code class="language-python">from yundownload.logger import show_log, write_log, logger
 
-logger = logging.getLogger('yundownload')
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
-download = YunDownloader()
 </code></pre>
-<h2 id="_15">动态并发</h2>
-<p>Yun download 默认会禁用动态并发，如果需要自动处理动态并发，可以将 <code>dynamic_concurrency</code> 参数设置为 <code>True</code>。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<h2 id="_15">进度条</h2>
+<p>Yun download cli 工具中实现。</p>
+<pre><code class="language-python">from yundownload import render_ui, Request
 
-download = YunDownloader(
-    dynamic_concurrency=True
-)
+render_ui([Request(url='', save_path=''), ])
 </code></pre>
-<h2 id="_16">进度条</h2>
-<p>Yun download 默认会禁用进度条，如果需要显示进度条，可以将 <code>cli</code> 参数设置为 <code>True</code>。</p>
-<pre><code class="language-python">from yundownload import YunDownloader
+<h2 id="_16">状态</h2>
+<p>通过 <code>request.status</code> 可获取当前执行状态。</p>
+<pre><code class="language-python">from yundownload import Request
+request = Request(url='', save_path='')
+print(request.status)
+</code></pre>
+<h2 id="_17">下载状态</h2>
+<p>通过 <code>request.stat</code> 可获取当前下载状态。</p>
+<pre><code class="language-python">from yundownload import Request
 
-download = YunDownloader(
-    cli=True
-)
+request = Request(url='', save_path='')
+print('下载进度', request.stat.percentage)
+print('每秒下载字节', request.stat.speed)
+print('开始时间', request.stat.start_time)
+print('结束时间', request.stat.end_time)
 </code></pre>
 
 
@@ -905,7 +850,7 @@ download = YunDownloader(
     <span class="md-icon" title="最后更新">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">2024年7月17日</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">2024年10月31日</span>
   </span>
 
     
