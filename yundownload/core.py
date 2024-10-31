@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import IntEnum
+from enum import IntFlag
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -25,14 +25,15 @@ class Retry:
     retry_connect: int = 5
 
 
-class Status(IntEnum):
+class Status(IntFlag):
     """
     下载状态
     """
-    FAIL = 0
-    SUCCESS = 1
-    SLICE = 2
-    EXIST = 3
+    WAIT = 1
+    FAIL = 2
+    SUCCESS = 4
+    SLICE = 8
+    EXIST = 16
 
 
 @dataclass

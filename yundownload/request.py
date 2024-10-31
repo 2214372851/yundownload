@@ -1,16 +1,15 @@
-import logging
 from pathlib import Path
 from typing import Literal, TYPE_CHECKING, Optional, Callable
 from urllib.parse import urljoin
 
 import httpx
 
-from core import Result
+from yundownload.core import Result, Status
+from yundownload.logger import logger
+from yundownload.stat import Stat
 
 if TYPE_CHECKING:
     from yundownload.core import Auth
-
-logger = logging.getLogger(__name__)
 
 
 class Request:
@@ -40,7 +39,14 @@ class Request:
         self.method = method
         self.slice_threshold = slice_threshold
         self.params = params or {}
-        self.headers = headers or {}
+        self.meta = {}
+        self.headers = {
+            'User-Agent': 'Wget/1.12 (linux-gnu)',
+            'Content-Encoding': 'identity',
+            'Accept-Encoding': 'identity'
+        }
+        if headers is not None:
+            self.headers.update(headers)
         self.cookies = cookies or {}
         self.data = data or {}
         self.transborder_delete = False
@@ -62,16 +68,32 @@ class Request:
         else:
             logger.warning("callback is not callable")
             self._error_callback = None
+        self.stat = Stat(self)
+        self.status: Optional[Status] = Status.WAIT
 
     def success_callback(self, result: 'Result'):
+        self.stat.close()
         if self._success_callback is None:
             return
         return self._success_callback(result)
 
+    async def asuccess_callback(self, result: 'Result'):
+        self.stat.close()
+        if self._success_callback is None:
+            return
+        return await self._success_callback(result)
+
     def error_callback(self, result: 'Result'):
+        self.stat.close()
         if self._error_callback is None:
             return
         return self._error_callback(result)
+
+    async def aerror_callback(self, result: 'Result'):
+        self.stat.close()
+        if self._error_callback is None:
+            return
+        return await self._error_callback(result)
 
     def join(self, other: str) -> str:
         return urljoin(self.url, other)

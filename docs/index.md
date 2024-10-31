@@ -24,10 +24,15 @@ Yun download 是 Python 3 的文件下载器，它提供流式下载和文件分
 
 现在，让我们开始第一个示例：
 
-```shell
->>> from yundownload import YunDownloader
->>> y = YunDownloader()
->>> y.download('https://bing.com', './bing.html')
+```python
+from yundownload import DownloadPools, Request
+
+
+with DownloadPools() as pool:
+    pool.push(Request(
+      url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
+      save_path='./1.exe'
+    ))
 ```
 
 或者，使用命令行的方式：
@@ -37,34 +42,36 @@ Yun download 是 Python 3 的文件下载器，它提供流式下载和文件分
 ```shell
 $ yundownload --help
 
-usage: yundownload [-h] [-mc MAX_CONCURRENCY] [-mj MAX_JOIN] [-t TIMEOUT] [-r RETRY] [--stream]
-                   url save_path
+usage: yundownload [-h] {load,download} ...
 
 Yun Downloader
 
 positional arguments:
-  url                   Download url
-  save_path             Save path, including file name
+  {load,download}
+    load           Load a request
+    download       Download a file
 
 options:
-  -h, --help            show this help message and exit
-  -mc MAX_CONCURRENCY, --max_concurrency MAX_CONCURRENCY
-                        Maximum concurrency
-  -mj MAX_JOIN, --max_join MAX_JOIN
-                        Maximum connection number
-  -t TIMEOUT, --timeout TIMEOUT
-                        Timeout period
-  -r RETRY, --retry RETRY
-                        Retry times
-  --stream              Forced streaming
+  -h, --help       show this help message and exit
 ```
 
 命令行下载文件
 
 ```shell
-$ yundownload 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe' './1.exe'
+$ yundownload download 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe' './1.exe'
 
 QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M [00:05<01:15, 2.65MB/s] 
+```
+
+fyd文件命令行读取下载（只适用于简单场景）
+```shell
+$ yundownload load ./test.fyd
+```
+
+fyd文件格式
+```text
+save_path1<fyd>download_url1
+save_path2<fyd>download_url2
 ```
 
 ## 特征
@@ -115,7 +122,7 @@ Yun download 建立在 `httpx` 模块上，并为您提供：
 
 - `httpx`- 网络请求。
 - `aiofiles`- 异步文件读写。
-- `tqdm`-命令行进度条。
+- `rich`-命令行进度条。
 - `certifi`-SSL 证书。
 - `idna`- 国际化域名支持。
 - `sniffio`- 异步库自动检测。
