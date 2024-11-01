@@ -95,10 +95,12 @@ class DownloadPools(BaseDP):
         for i in range(self._retry.retry):
             try:
                 if not slice_flag:
+                    item.stat.close()
                     result = self._task_start(item, stream_downloader)
                     if result.status == Status.SLICE:
                         slice_flag = True
                 if slice_flag:
+                    item.stat.close()
                     result = self._task_start(item, slice_downloader)
                 item.status = result.status
                 return result
@@ -179,10 +181,12 @@ class AsyncDownloadPools(BaseDP):
         for i in range(self._retry.retry):
             try:
                 if not slice_flag:
+                    item.stat.close()
                     result = await self._task_start(item, async_stream_downloader)
                     if result.status == Status.SLICE:
                         slice_flag = True
                 if slice_flag:
+                    item.stat.close()
                     result = await self._task_start(item, async_slice_downloader)
                 item.status = result.status
                 return result
