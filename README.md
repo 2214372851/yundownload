@@ -72,6 +72,8 @@ save_path2<fyd>download_url2
 
 # Update log
 
+- V 0.4.2
+    - Fix retry progress
 - V 0.4.1
     - Added to file path creation
 - V 0.4.0

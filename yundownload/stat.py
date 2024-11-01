@@ -29,6 +29,9 @@ class Stat:
         async with self._alock:
             self._download_size += download_size
 
+    def clear(self):
+        self._download_size = 0
+
     @property
     def start_time(self):
         return self._start_time
