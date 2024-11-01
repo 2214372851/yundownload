@@ -36,9 +36,9 @@ def render_ui(requests: List[Request]):
                 percentage = request.stat.percentage
                 progress.update(request.meta['task'], completed=percentage)
                 speed += request.stat.speed
-            console.print(f"[bold green]Speed: {convert_bytes_per_second(speed)}/s")
+            console.print(f"[bold green]Speed: {convert_bytes_per_second(speed)}")
             is_ok = all(bool((Status.SUCCESS | Status.FAIL | Status.EXIST) & request.status) for request in requests)
-            time.sleep(5)
+            time.sleep(2.5)
 
 
 def get_version():
