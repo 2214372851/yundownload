@@ -22,6 +22,7 @@ def stream_downloader(
 ) -> Result:
     continued_flag = False
     request_headers = request.headers.copy()
+    request.save_path.parent.mkdir(exist_ok=True, parents=True)
     if request.save_path.exists():
         request_headers['Range'] = f'bytes={request.save_path.stat().st_size}-'
         request.stat.push(request.save_path.stat().st_size)
@@ -170,6 +171,7 @@ async def async_stream_downloader(
 ) -> Result:
     continued_flag = False
     request_headers = request.headers.copy()
+    request.save_path.parent.mkdir(exist_ok=True, parents=True)
     if request.save_path.exists():
         request_headers['Range'] = f'bytes={request.save_path.stat().st_size}-'
         await request.stat.apush(request.save_path.stat().st_size)

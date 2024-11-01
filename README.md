@@ -2,7 +2,7 @@
 
 # Intro
 
-[官方文档](https://2214372851.github.io/yundownload/)
+[Official documentation](https://2214372851.github.io/yundownload/)
 > This project is a file downloader, supporting dynamic download according to the size of the file to choose the
 > download mode, for the connection that supports breakpoint continuation will automatically break the connection, for
 > the
@@ -16,7 +16,6 @@
 # Document
 
 [yundownload GitHub](https://github.com/2214372851/yundownload)
-[yundownload Docs](https://2214372851.github.io/yundownload/)
 
 # Give an example
 
@@ -58,8 +57,25 @@ $ yundownload download 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.2922
 QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M [00:05<01:15, 2.65MB/s] 
 ```
 
+fyd文件命令行读取下载（只适用于简单场景）
+
+```shell
+$ yundownload load ./test.fyd
+```
+
+fyd文件格式
+
+```text
+save_path1<fyd>download_url1
+save_path2<fyd>download_url2
+```
+
 # Update log
 
+- V 0.4.1
+    - Added to file path creation
+- V 0.4.0
+    - Refactor the core modules, optimize the code structure, and optimize the download speed
 - V 0.3.4
     - Fixed event loop duplicate creation
 - V 0.3.3
