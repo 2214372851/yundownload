@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import aiofiles
 from httpx import Client, AsyncClient
 
+from core import Status
 from yundownload.exception import FileRangeTransBorderError
 from yundownload.logger import logger
 
@@ -210,3 +211,13 @@ def convert_bytes_per_second(bytes_per_second):
         index += 1
 
     return f"{bytes_per_second:.2f} {units[index]}"
+
+
+def status_to_str(status: Status):
+    return {
+        Status.SUCCESS: 'Success',
+        Status.FAIL: 'Fail',
+        Status.EXIST: 'Exist',
+        Status.WAIT: 'Wait',
+        Status.SLICE: 'Slice'
+    }[status]
