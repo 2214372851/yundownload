@@ -191,6 +191,7 @@ class AsyncDownloadPools(BaseDP):
                 item.status = result.status
                 return result
             except Exception as e:
+                raise e
                 err = e
                 logger.warning(
                     f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}")

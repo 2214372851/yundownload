@@ -63,15 +63,15 @@ $ yundownload download 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.2922
 QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M [00:05<01:15, 2.65MB/s] 
 ```
 
-fyd文件命令行读取下载（只适用于简单场景）
+yfd文件命令行读取下载（只适用于简单场景）
 ```shell
-$ yundownload load ./test.fyd
+$ yundownload load ./test.yfd
 ```
 
 fyd文件格式
 ```text
-save_path1<fyd>download_url1
-save_path2<fyd>download_url2
+save_path1<yfd>download_url1
+save_path2<yfd>download_url2
 ```
 
 ## 特征

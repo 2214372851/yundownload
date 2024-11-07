@@ -220,7 +220,7 @@ async def async_stream_downloader(
                 status=Status.SUCCESS,
                 request=request
             )
-            await request.success_callback(result)
+            await request.asuccess_callback(result)
             return result
 
 
