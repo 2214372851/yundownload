@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import aiofiles
 from httpx import Client, AsyncClient
 
-from core import Status
+from yundownload.core import Status
 from yundownload.exception import FileRangeTransBorderError
 from yundownload.logger import logger
 
