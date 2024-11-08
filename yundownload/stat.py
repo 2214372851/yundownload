@@ -2,6 +2,7 @@ import asyncio
 import threading
 import time
 from typing import TYPE_CHECKING
+from yundownload.logger import logger
 
 if TYPE_CHECKING:
     from yundownload.request import Request
@@ -43,8 +44,11 @@ class Stat:
     @property
     def percentage(self):
         if self._request.correct_size is None:
+            logger.warning(f"{self._request.save_path.name} : Correct size is None")
             return 0
-        return round(self._download_size / self._request.correct_size, 2)
+        percentage = round(self._download_size / self._request.correct_size, 2)
+        logger.info(f"Percentage: {percentage}")
+        return percentage
 
     @property
     def speed(self):

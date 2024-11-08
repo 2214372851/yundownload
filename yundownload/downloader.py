@@ -26,7 +26,7 @@ def stream_downloader(
     if request.save_path.exists():
         request_headers['Range'] = f'bytes={request.save_path.stat().st_size}-'
         request.stat.push(request.save_path.stat().st_size)
-
+    logger.info(f'{request.save_path.name} stream request wait...')
     with client.stream(
             method=request.method,
             url=request.url,
@@ -52,11 +52,12 @@ def stream_downloader(
         response.raise_for_status()
         if response.headers.get('Accept-Ranges', None) == 'bytes' or response.status_code == 206:
             continued_flag = True
-        correct_size = int(response.headers.get('Content-Length', 0))
+        correct_size = int(response.headers.get('Content-Length', -1))
         request.save_path.parent.mkdir(exist_ok=True, parents=True)
+        request.correct_size = correct_size
         if correct_size:
-            request.correct_size = correct_size
             if continued_flag and correct_size > request.slice_threshold and not request.stream:
+                logger.info(f'{request.save_path.name} select slice download')
                 return Result(
                     status=Status.SLICE,
                     request=request
@@ -175,6 +176,7 @@ async def async_stream_downloader(
     if request.save_path.exists():
         request_headers['Range'] = f'bytes={request.save_path.stat().st_size}-'
         await request.stat.apush(request.save_path.stat().st_size)
+    logger.info(f'{request.save_path.name} stream request wait...')
     async with semaphore:
         async with client.stream(
                 method=request.method,
@@ -187,6 +189,7 @@ async def async_stream_downloader(
                 timeout=request.timeout,
                 follow_redirects=request.follow_redirects,
         ) as response:
+            logger.info(f'{request.save_path.name} stream request success')
             response: Response
             if response.status_code == 416:
                 await async_check_range_transborder(
@@ -201,10 +204,10 @@ async def async_stream_downloader(
             response.raise_for_status()
             if response.headers.get('Accept-Ranges', None) == 'bytes' or response.status_code == 206:
                 continued_flag = True
-            correct_size = int(response.headers.get('Content-Length', 0))
+            correct_size = int(response.headers.get('Content-Length', -1))
             request.save_path.parent.mkdir(exist_ok=True, parents=True)
+            request.correct_size = correct_size
             if correct_size:
-                request.correct_size = correct_size
                 if continued_flag and correct_size > request.slice_threshold and not request.stream:
                     return Result(
                         status=Status.SLICE,

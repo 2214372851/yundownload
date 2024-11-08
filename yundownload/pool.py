@@ -57,6 +57,7 @@ class DownloadPools(BaseDP):
             auth: Optional['Auth'] = None,
     ) -> None:
         self._retry = retry
+        self._max_workers = max_workers
         self._thread_pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=max_workers)
         self.client = httpx.Client(
             transport=httpx.HTTPTransport(
@@ -92,6 +93,7 @@ class DownloadPools(BaseDP):
         err = None
         slice_flag = False
         result = None
+        logger.info(f'{item.save_path.name} chunk download success')
         for i in range(self._retry.retry):
             try:
                 if not slice_flag:
