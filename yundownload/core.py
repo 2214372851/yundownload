@@ -20,7 +20,7 @@ class Proxies:
 
 @dataclass
 class Retry:
-    retry: int = 1
+    retry: int = 0
     retry_delay: int = 10
     retry_connect: int = 5
 
