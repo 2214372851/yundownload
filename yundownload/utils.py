@@ -156,7 +156,7 @@ def merge_file(slice_flag: str, save_path: Path):
             logger.info(f'merge chunk: [{file}]')
             with file.open('rb') as rf:
                 while True:
-                    chunk = rf.read(4096)
+                    chunk = rf.read(40960)
                     if not chunk:
                         break
                     wf.write(chunk)
@@ -181,7 +181,7 @@ async def async_merge_file(slice_flag: str, save_path: Path):
             logger.info(f'merge chunk: [{file}]')
             async with aiofiles.open(file, 'rb') as rf:
                 while True:
-                    chunk = await rf.read(4096)
+                    chunk = await rf.read(40960)
                     if not chunk:
                         break
                     await wf.write(chunk)

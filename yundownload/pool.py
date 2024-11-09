@@ -180,7 +180,7 @@ class AsyncDownloadPools(BaseDP):
         err = None
         slice_flag = False
         result = None
-        for i in range(self._retry.retry):
+        for i in range(1, self._retry.retry):
             try:
                 if not slice_flag:
                     item.stat.close()
@@ -196,7 +196,8 @@ class AsyncDownloadPools(BaseDP):
                 err = e
                 logger.warning(
                     f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}")
-                time.sleep(self._retry.retry_delay)
+                if i < self._retry.retry:
+                    await asyncio.sleep(self._retry.retry_delay)
                 continue
         result = Result(
             status=Status.FAIL,
@@ -209,13 +210,16 @@ class AsyncDownloadPools(BaseDP):
         return result
 
     async def _task_fail(self, result: Result):
-        await result.request.error_callback(result)
+        await result.request.aerror_callback(result)
 
     async def results(self):
         return await asyncio.gather(*self._future_list)
 
     async def close(self):
+        print('close')
         await self.results()
+        print('close2')
+
         await self.client.aclose()
 
     async def __aenter__(self):

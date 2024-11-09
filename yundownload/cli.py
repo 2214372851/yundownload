@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import time
 from importlib.metadata import version
 from typing import Iterator
@@ -38,7 +39,34 @@ def render_ui(requests: List[Request]):
                 speed += request.stat.speed
             console.print(f"[bold green]Speed: {convert_bytes_per_second(speed)}")
             is_ok = all(bool((Status.SUCCESS | Status.FAIL | Status.EXIST) & request.status) for request in requests)
-            time.sleep(2.5)
+            time.sleep(5)
+
+
+async def arender_ui(requests: List[Request]):
+    table = Table(title="Yun Downloader", show_lines=True, expand=True)
+    table.add_column("Filename", justify="right", style="cyan", no_wrap=True)
+    table.add_column("URI", style="magenta")
+    for request in requests:
+        table.add_row(request.save_path.name, request.url)
+
+    console = Console()
+
+    with Progress(console=console) as progress:
+        for request in requests:
+            request.meta['task'] = progress.add_task(f"[red]{request.save_path.name}...", total=1)
+
+        is_ok = False
+        while not is_ok:
+            console.clear()
+            console.print(table)
+            speed = 0
+            for request in requests:
+                percentage = request.stat.percentage
+                progress.update(request.meta['task'], completed=percentage)
+                speed += request.stat.speed
+            console.print(f"[bold green]Speed: {convert_bytes_per_second(speed)}")
+            is_ok = all(bool((Status.SUCCESS | Status.FAIL | Status.EXIST) & request.status) for request in requests)
+            await asyncio.sleep(5)
 
 
 def get_version():
@@ -81,6 +109,8 @@ def cli() -> None:
             request.stream = True
         with DownloadPools(max_workers=args.maxworker, retry=Retry(retry=args.retry)) as pool:
             pool.push(request)
+            render_ui([request])
+
     elif args.subcommand == 'load':
         with DownloadPools() as pool:
             requests = []
