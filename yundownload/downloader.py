@@ -116,7 +116,7 @@ def slice_downloader(
         )
         request.success_callback(result)
         return result
-    raise list(filter(lambda x: x[1], result))[0][1]
+    raise list(filter(lambda x: not x[0], result))[0][1]
 
 
 def chunk_downloader(
@@ -135,6 +135,7 @@ def chunk_downloader(
         elif save_path.stat().st_size > request.slice_size:
             save_path.unlink()
         else:
+            request.stat.push(save_path.stat().st_size)
             chunk_start_size = start + save_path.stat().st_size
             headers['Range'] = f'bytes={chunk_start_size}-{end}'
             request.stat.push(save_path.stat().st_size)
@@ -270,7 +271,7 @@ async def async_slice_downloader(
         )
         await request.asuccess_callback(result)
         return result
-    raise list(filter(lambda x: x[1], result))[0][1]
+    raise list(filter(lambda x: not x[0], result))[0][1]
 
 
 async def async_chunk_downloader(
@@ -290,6 +291,7 @@ async def async_chunk_downloader(
         elif save_path.stat().st_size > request.slice_size:
             save_path.unlink()
         else:
+            await request.stat.apush(save_path.stat().st_size)
             chunk_start_size = start + save_path.stat().st_size
             headers['Range'] = f'bytes={chunk_start_size}-{end}'
             if chunk_start_size == request.correct_size:
