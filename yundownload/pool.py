@@ -1,5 +1,4 @@
 import asyncio
-import signal
 import time
 from abc import abstractmethod
 from concurrent.futures import ThreadPoolExecutor, wait, Future
@@ -94,7 +93,7 @@ class DownloadPools(BaseDP):
         err = None
         slice_flag = False
         result = None
-        for i in range(1, self._retry.retry):
+        for i in range(0, self._retry.retry + 1):
             try:
                 if not slice_flag:
                     item.stat.close()
@@ -184,7 +183,7 @@ class AsyncDownloadPools(BaseDP):
         err = None
         slice_flag = False
         result = None
-        for i in range(1, self._retry.retry):
+        for i in range(0, self._retry.retry + 1):
             try:
                 if not slice_flag:
                     item.stat.close()
