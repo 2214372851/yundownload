@@ -116,7 +116,7 @@ def slice_downloader(
         )
         request.success_callback(result)
         return result
-    raise list(filter(lambda x: x[1], result))[0]
+    raise list(filter(lambda x: x[1], result))[0][1]
 
 
 def chunk_downloader(
@@ -270,7 +270,7 @@ async def async_slice_downloader(
         )
         await request.asuccess_callback(result)
         return result
-    raise list(filter(lambda x: x[1], result))[0]
+    raise list(filter(lambda x: x[1], result))[0][1]
 
 
 async def async_chunk_downloader(
