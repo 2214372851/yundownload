@@ -72,24 +72,28 @@ class Request:
         self.status: Optional[Status] = Status.WAIT
 
     def success_callback(self, result: 'Result'):
+        logger.error(f"{self.save_path.name} The task success")
         self.stat.close()
         if self._success_callback is None:
             return
         return self._success_callback(result)
 
     async def asuccess_callback(self, result: 'Result'):
+        logger.error(f"{self.save_path.name} The task success")
         self.stat.close()
         if self._success_callback is None:
             return
         return await self._success_callback(result)
 
     def error_callback(self, result: 'Result'):
+        logger.error(f"{self.save_path.name} The task failed")
         self.stat.close()
         if self._error_callback is None:
             return
         return self._error_callback(result)
 
     async def aerror_callback(self, result: 'Result'):
+        logger.error(f"{self.save_path.name} The task failed")
         self.stat.close()
         if self._error_callback is None:
             return

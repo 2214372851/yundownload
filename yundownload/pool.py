@@ -81,6 +81,7 @@ class DownloadPools(BaseDP):
         return func(self.client, item, self._pool_submit)
 
     def push(self, item: 'Request'):
+        logger.info(f'{item.save_path.name} push task')
         future: Future = self._pool_submit(self._task_handle, item)
         self._future_list.append(future)
         pass
@@ -93,8 +94,7 @@ class DownloadPools(BaseDP):
         err = None
         slice_flag = False
         result = None
-        logger.info(f'{item.save_path.name} chunk download success')
-        for i in range(self._retry.retry):
+        for i in range(1, self._retry.retry):
             try:
                 if not slice_flag:
                     item.stat.close()
@@ -108,9 +108,10 @@ class DownloadPools(BaseDP):
                 return result
             except Exception as e:
                 err = e
-                logger.warning(
-                    f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}")
-                time.sleep(self._retry.retry_delay)
+                if i < self._retry.retry:
+                    logger.warning(
+                        f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}")
+                    time.sleep(self._retry.retry_delay)
                 continue
         result = Result(
             status=Status.FAIL,
@@ -125,11 +126,13 @@ class DownloadPools(BaseDP):
         result.request.error_callback(result)
 
     def results(self):
+        logger.info('yundownload result')
         return [future.result() for future in self._future_list]
 
     def close(self):
         wait(self._future_list)
         self._thread_pool.shutdown(wait=True)
+        logger.info('yundownload close')
 
     def __enter__(self):
         return self
@@ -173,6 +176,7 @@ class AsyncDownloadPools(BaseDP):
         return await func(self.client, item, self._semaphore)
 
     async def push(self, item: 'Request'):
+        logger.info(f'{item.save_path.name} push task')
         future = asyncio.create_task(self._task_handle(item))
         self._future_list.append(future)
 
@@ -194,9 +198,9 @@ class AsyncDownloadPools(BaseDP):
                 return result
             except Exception as e:
                 err = e
-                logger.warning(
-                    f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}")
                 if i < self._retry.retry:
+                    logger.warning(
+                        f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}")
                     await asyncio.sleep(self._retry.retry_delay)
                 continue
         result = Result(
@@ -213,14 +217,13 @@ class AsyncDownloadPools(BaseDP):
         await result.request.aerror_callback(result)
 
     async def results(self):
+        logger.info('yundownload result')
         return await asyncio.gather(*self._future_list)
 
     async def close(self):
-        print('close')
         await self.results()
-        print('close2')
-
         await self.client.aclose()
+        logger.info('yundownload close')
 
     async def __aenter__(self):
         return self
