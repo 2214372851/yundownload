@@ -11,6 +11,6 @@ from yundownload.utils import (get_stream_server_size,
                                convert_bytes_per_second)
 from yundownload.logger import show_log, write_log, logger
 
-from yundownload.cli import cli, get_version, render_ui
+from yundownload.cli import cli, get_version, render_ui, arender_ui
 
 __version__ = get_version()
