@@ -57,7 +57,7 @@ class DownloadPools(BaseDP):
     ) -> None:
         self._retry = retry
         self._max_workers = max_workers
-        self._thread_pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=max_workers)
+        self._thread_pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=2 * max_workers)
         self.client = httpx.Client(
             transport=httpx.HTTPTransport(
                 retries=self._retry.retry_connect
@@ -80,7 +80,9 @@ class DownloadPools(BaseDP):
         return func(self.client, item, self._pool_submit)
 
     def push(self, item: 'Request'):
-        logger.info(f'{item.save_path.name} push task')
+        logger.info(f'[{item.save_path.name}] push task')
+        while len([1 for item in self._future_list if not item.done()]) >= self._max_workers:
+            time.sleep(3)
         future: Future = self._pool_submit(self._task_handle, item)
         self._future_list.append(future)
         pass
@@ -109,7 +111,7 @@ class DownloadPools(BaseDP):
                 err = e
                 if i < self._retry.retry:
                     logger.warning(
-                        f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}")
+                        f"retrying {i} of {self._retry.retry}, error: {e} | line: {e.__traceback__.tb_lineno}")
                     time.sleep(self._retry.retry_delay)
                 continue
         result = Result(
@@ -153,6 +155,7 @@ class AsyncDownloadPools(BaseDP):
     ) -> None:
         self._retry = retry
         self._semaphore: asyncio.Semaphore = asyncio.Semaphore(max_workers)
+        self._max_workers = max_workers
         self.client = AsyncClient(
             transport=httpx.AsyncHTTPTransport(
                 retries=self._retry.retry_connect
@@ -175,7 +178,9 @@ class AsyncDownloadPools(BaseDP):
         return await func(self.client, item, self._semaphore)
 
     async def push(self, item: 'Request'):
-        logger.info(f'{item.save_path.name} push task')
+        logger.info(f'[{item.save_path.name}] push task')
+        while len([1 for item in self._future_list if not item.done()]) >= self._max_workers:
+            await asyncio.sleep(3)
         future = asyncio.create_task(self._task_handle(item))
         self._future_list.append(future)
 
@@ -186,20 +191,23 @@ class AsyncDownloadPools(BaseDP):
         for i in range(0, self._retry.retry + 1):
             try:
                 if not slice_flag:
-                    item.stat.close()
+                    item.stat.clear()
                     result = await self._task_start(item, async_stream_downloader)
                     if result.status == Status.SLICE:
                         slice_flag = True
                 if slice_flag:
-                    item.stat.close()
+                    item.stat.clear()
                     result = await self._task_start(item, async_slice_downloader)
                 item.status = result.status
+                item.stat.close()
                 return result
             except Exception as e:
                 err = e
                 if i < self._retry.retry:
                     logger.warning(
-                        f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}")
+                        f"retrying... {i} of {self._retry.retry}, error msg: {e} line: {e.__traceback__.tb_lineno}",
+                        exc_info=True
+                    )
                     await asyncio.sleep(self._retry.retry_delay)
                 continue
         result = Result(
@@ -210,6 +218,7 @@ class AsyncDownloadPools(BaseDP):
         logger.error(err, exc_info=True)
         await self._task_fail(result)
         item.status = result.status
+        item.stat.close()
         return result
 
     async def _task_fail(self, result: Result):

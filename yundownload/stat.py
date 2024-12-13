@@ -47,7 +47,6 @@ class Stat:
             logger.warning(f"{self._request.save_path.name} : Correct size is None")
             return 0
         percentage = round(self._download_size / self._request.correct_size, 2)
-        logger.info(f"Percentage: {percentage}")
         return percentage
 
     @property

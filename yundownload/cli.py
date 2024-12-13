@@ -15,7 +15,7 @@ from yundownload.request import Request
 from yundownload.utils import convert_bytes_per_second
 
 
-def render_ui(requests: List[Request]):
+def render_ui(requests: List[Request], refresh_time: int = 5):
     table = Table(title="Yun Downloader", show_lines=True, expand=True)
     table.add_column("Filename", justify="right", style="cyan", no_wrap=True)
     table.add_column("URI", style="magenta")
@@ -39,10 +39,10 @@ def render_ui(requests: List[Request]):
                 speed += request.stat.speed
             console.print(f"[bold green]Speed: {convert_bytes_per_second(speed)}")
             is_ok = all(bool((Status.SUCCESS | Status.FAIL | Status.EXIST) & request.status) for request in requests)
-            time.sleep(5)
+            time.sleep(refresh_time)
 
 
-async def arender_ui(requests: List[Request]):
+async def arender_ui(requests: List[Request], refresh_time: int = 5):
     table = Table(title="Yun Downloader", show_lines=True, expand=True)
     table.add_column("Filename", justify="right", style="cyan", no_wrap=True)
     table.add_column("URI", style="magenta")
@@ -66,7 +66,7 @@ async def arender_ui(requests: List[Request]):
                 speed += request.stat.speed
             console.print(f"[bold green]Speed: {convert_bytes_per_second(speed)}")
             is_ok = all(bool((Status.SUCCESS | Status.FAIL | Status.EXIST) & request.status) for request in requests)
-            await asyncio.sleep(5)
+            await asyncio.sleep(refresh_time)
 
 
 def get_version():

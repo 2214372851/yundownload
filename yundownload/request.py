@@ -23,7 +23,7 @@ class Request:
             cookies: dict = None,
             data: dict = None,
             slice_threshold=500 * 1024 * 1024,  # 500M
-            slice_size: int = 100 * 1024 * 1024,  # 100M
+            slice_size: int = 50 * 1024 * 1024,  # 50M
             auth: Optional['Auth'] = None,
             timeout: int = 20,
             follow_redirects: bool = True,
@@ -72,28 +72,28 @@ class Request:
         self.status: Optional[Status] = Status.WAIT
 
     def success_callback(self, result: 'Result'):
-        logger.error(f"{self.save_path.name} The task success")
+        logger.info(f"[{self.save_path.name}] The task success")
         self.stat.close()
         if self._success_callback is None:
             return
         return self._success_callback(result)
 
     async def asuccess_callback(self, result: 'Result'):
-        logger.error(f"{self.save_path.name} The task success")
+        logger.info(f"[{self.save_path.name}] The task success")
         self.stat.close()
         if self._success_callback is None:
             return
         return await self._success_callback(result)
 
     def error_callback(self, result: 'Result'):
-        logger.error(f"{self.save_path.name} The task failed")
+        logger.error(f"[{self.save_path.name}] The task failed")
         self.stat.close()
         if self._error_callback is None:
             return
         return self._error_callback(result)
 
     async def aerror_callback(self, result: 'Result'):
-        logger.error(f"{self.save_path.name} The task failed")
+        logger.error(f"[{self.save_path.name}] The task failed")
         self.stat.close()
         if self._error_callback is None:
             return
@@ -101,3 +101,15 @@ class Request:
 
     def join(self, other: str) -> str:
         return urljoin(self.url, other)
+
+    def is_done(self) -> bool:
+        return self.status in [Status.SUCCESS, Status.FAIL]
+
+    def is_success(self) -> bool:
+        return self.status == Status.SUCCESS
+
+    def is_fail(self) -> bool:
+        return self.status == Status.FAIL
+
+    def __repr__(self) -> str:
+        return f"<Request: {self.url}>"
