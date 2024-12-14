@@ -84,8 +84,10 @@ def slice_downloader(
     if not request.correct_size:
         raise NotSliceSizeError(request.save_path)
     if request.correct_size / request.slice_size > 100:
+        logger.warning(
+            f'[{request.save_path} <{int(request.correct_size / request.slice_size)}>] slice size is too big')
         warnings.warn(
-            f'[{request.save_path.name}] if the number of slices in the '
+            f'[{request.save_path} <{int(request.correct_size / request.slice_size)}>] if the number of slices in the '
             f'file is too large, check whether the slices are too small')
     slice_flag_name = request.save_path.name.replace('.', '-')
     future_list = []
@@ -94,9 +96,7 @@ def slice_downloader(
         chunk_path = request.save_path.parent.joinpath(
             '{}--{}.ydstf'.format(
                 slice_flag_name,
-                start
-            )
-        )
+                start))
         future = poll_push(
             chunk_downloader,
             client,
@@ -126,11 +126,12 @@ def chunk_downloader(
         end: int,
         save_path: Path,
 ) -> (bool, None | Exception):
+    logger.info(f'[{save_path}] chunk start download')
     headers = request.headers.copy()
     headers['Range'] = f'bytes={start}-{end}'
     if save_path.exists():
         if save_path.stat().st_size == request.slice_size:
-            logger.info(f'[{request.save_path.name}] The file chunk already exists skip')
+            logger.info(f'[{save_path}] The file chunk already exists skip')
             return True, None
         elif save_path.stat().st_size > request.slice_size:
             save_path.unlink()
@@ -159,10 +160,10 @@ def chunk_downloader(
                 for chunk in response.iter_bytes(chunk_size=request.stream_size):
                     f.write(chunk)
                     request.stat.push(len(chunk))
-            logger.info(f'[{save_path.name}] chunk download success')
+            logger.info(f'[{save_path}] chunk download success')
             return True, None
     except Exception as e:
-        logger.error(f'[{save_path.name}] Chunk download error {e}', exc_info=True)
+        logger.error(f'[{save_path}] Chunk download error {e}', exc_info=True)
         return False, e
 
 
@@ -236,8 +237,10 @@ async def async_slice_downloader(
     if not request.correct_size:
         raise NotSliceSizeError(request.save_path)
     if request.correct_size / request.slice_size > 100:
+        logger.warning(
+            f'[{request.save_path} <{int(request.correct_size / request.slice_size)}>] slice size is too big')
         warnings.warn(
-            f'[{request.save_path.name}] if the number of slices in the '
+            f'[{request.save_path} <{int(request.correct_size / request.slice_size)}>] if the number of slices in the '
             f'file is too large, check whether the slices are too small')
     slice_flag_name = request.save_path.name.replace('.', '-')
     task_list = []
@@ -246,9 +249,7 @@ async def async_slice_downloader(
         chunk_path = request.save_path.parent.joinpath(
             '{}--{}.ydstf'.format(
                 slice_flag_name,
-                start
-            )
-        )
+                start))
         task_list.append(
             asyncio.create_task(
                 async_chunk_downloader(
@@ -257,10 +258,7 @@ async def async_slice_downloader(
                     start,
                     end,
                     chunk_path,
-                    semaphore
-                )
-            )
-        )
+                    semaphore)))
     result = await asyncio.gather(*task_list)
     status = [res[0] for res in result]
     if all(status):
@@ -282,11 +280,12 @@ async def async_chunk_downloader(
         save_path: Path,
         semaphore: asyncio.Semaphore
 ) -> (bool, None | Exception):
+    logger.info(f'[{save_path}] chunk start download')
     headers = request.headers.copy()
     headers['Range'] = f'bytes={start}-{end}'
     if save_path.exists():
         if save_path.stat().st_size == request.slice_size:
-            logger.info(f'[{save_path.name}] The file chunk already exists skip')
+            logger.info(f'[{save_path}] The file chunk already exists skip')
             return True, None
         elif save_path.stat().st_size > request.slice_size:
             save_path.unlink()
@@ -315,8 +314,8 @@ async def async_chunk_downloader(
                     async for chunk in response.aiter_bytes(chunk_size=request.stream_size):
                         await f.write(chunk)
                         await request.stat.apush(len(chunk))
-                logger.info(f'[{save_path.name}] chunk download success')
+                logger.info(f'[{save_path}] chunk download success')
                 return True, None
     except Exception as e:
-        logger.error(f'[{save_path.name}] Chunk download error {e}', exc_info=True)
+        logger.error(f'[{save_path}] Chunk download error {e}', exc_info=True)
         return False, e
