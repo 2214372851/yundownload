@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal, TYPE_CHECKING, Optional, Callable
+from typing import Literal, TYPE_CHECKING, Union, Callable, Coroutine, Optional
 from urllib.parse import urljoin
 
 import httpx
@@ -11,6 +11,7 @@ from yundownload.stat import Stat
 if TYPE_CHECKING:
     from yundownload.core import Auth
 
+RequestCallBack = Union[Callable[['Result'], None],  Callable[['Result'], Coroutine[None, None, None]], None]
 
 class Request:
     def __init__(
@@ -28,8 +29,8 @@ class Request:
             timeout: int = 20,
             follow_redirects: bool = True,
             stream_size: int = 1024,
-            success_callback: Optional[Callable[['Result'], None]] = None,
-            error_callback: Optional[Callable[['Result'], None]] = None
+            success_callback: RequestCallBack = None,
+            error_callback: RequestCallBack = None
     ):
         self.url = url
         self.save_path = Path(save_path)
