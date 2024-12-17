@@ -77,7 +77,7 @@ def load_file(file: str) -> Iterator:
     with open(file, 'r', encoding='utf-8') as f:
         for line in iter(f.readline, ''):
             save_path, url = line.strip().split('<yfd>')
-            yield Request(url=url, save_path=save_path)
+            yield Request(url=url.replace('\n', ''), save_path=save_path)
 
 
 def cli() -> None:

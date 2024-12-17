@@ -72,6 +72,8 @@ save_path2<fyd>download_url2
 
 # Update log
 
+- V 0.4.11
+  - Optimized type prompts and load command support
 - V 0.4.2
     - Fix retry progress
 - V 0.4.1
