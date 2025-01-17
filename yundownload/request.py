@@ -2,8 +2,6 @@ from pathlib import Path
 from typing import Literal, TYPE_CHECKING, Union, Callable, Coroutine, Optional
 from urllib.parse import urljoin
 
-import httpx
-
 from yundownload.core import Result, Status
 from yundownload.logger import logger
 from yundownload.stat import Stat
@@ -11,7 +9,8 @@ from yundownload.stat import Stat
 if TYPE_CHECKING:
     from yundownload.core import Auth
 
-RequestCallBack = Union[Callable[['Result'], None],  Callable[['Result'], Coroutine[None, None, None]], None]
+RequestCallBack = Union[Callable[['Result'], None], Callable[['Result'], Coroutine[None, None, None]], None]
+
 
 class Request:
     def __init__(
@@ -27,8 +26,7 @@ class Request:
             slice_size: int = 50 * 1024 * 1024,  # 50M
             auth: Optional['Auth'] = None,
             timeout: int = 20,
-            follow_redirects: bool = True,
-            stream_size: int = 1024,
+            stream_size: int = 1048576,  # 1M
             success_callback: RequestCallBack = None,
             error_callback: RequestCallBack = None
     ):
@@ -51,14 +49,13 @@ class Request:
         self.cookies = cookies or {}
         self.data = data or {}
         self.transborder_delete = False
-        self.auth = None if auth is None else httpx.BasicAuth(
-            username=auth.username,
-            password=auth.password
+        self.auth = None if auth is None else (
+            auth.username,
+            auth.password
         )
         # 为 True 时，使用流式下载不采用分片
         self.stream = False
         self.timeout = timeout
-        self.follow_redirects = follow_redirects
         if callable(success_callback) or success_callback is None:
             self._success_callback = success_callback
         else:
@@ -104,13 +101,13 @@ class Request:
         return urljoin(self.url, other)
 
     def is_done(self) -> bool:
-        return self.status in [Status.SUCCESS, Status.FAIL]
+        return (self.status & (Status.SUCCESS | Status.FAIL | Status.EXIST)) != 0
 
     def is_success(self) -> bool:
-        return self.status == Status.SUCCESS
+        return (self.status & Status.SUCCESS) != 0
 
     def is_fail(self) -> bool:
-        return self.status == Status.FAIL
+        return (self.status & Status.FAIL) != 0
 
     def __repr__(self) -> str:
         return f"<Request: {self.url}>"

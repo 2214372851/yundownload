@@ -76,41 +76,19 @@ save_path2<yfd>download_url2
 
 ## 特征
 
-Yun download 建立在 `httpx` 模块上，并为您提供：
+Yun download 建立在 `niquests` 模块上，并为您提供：
 
 - 广泛的文件下载兼容
 - 连接限速的连接分片加速
 - 丰富的预留接口
 - 同态控制并发数
 - 断点续传(需文件服务器支持)
-- 双层重试机制
+- 异常重试机制
 - 完整的类型注释
 - 命令行模式
 
-以及所有 `httpx` 及 `requests` 的标注功能
+当然一些 `niquests` 底层的特性，也继承而来
 
-- 广泛[兼容请求的 API](https://www.python-httpx.org/compatibility/)。
-- 标准同步接口，但[如果您需要，也可以提供异步支持](https://www.python-httpx.org/async/)。
-- 能够直接向[WSGI 应用程序](https://www.python-httpx.org/async/#calling-into-python-web-apps)
-  或[ASGI 应用程序](https://www.python-httpx.org/async/#calling-into-python-web-apps)发出请求。
-- 到处都有严格的超时限制。
-- 完整类型注释。
-- 100％测试覆盖率。
-- 国际域名和 URL
-- 保持活动和连接池
-- 具有 Cookie 持久性的会话
-- 浏览器样式的 SSL 验证
-- 基本/摘要身份验证
-- 优雅的键/值 Cookie
-- 自动减压
-- 自动内容解码
-- Unicode 响应主体
-- 分段文件上传
-- HTTP(S) 代理支持
-- 连接超时
-- 流式下载
-- .netrc 支持
-- 分块请求
 
 ## 文档
 
@@ -120,14 +98,12 @@ Yun download 建立在 `httpx` 模块上，并为您提供：
 
 `Yun download` 项目依赖于这些优秀的库：
 
-- `httpx`- 网络请求。
+- `niquests`- 网络请求。
 - `aiofiles`- 异步文件读写。
 - `rich`-命令行进度条。
 - `certifi`-SSL 证书。
 - `idna`- 国际化域名支持。
 - `sniffio`- 异步库自动检测。
-
-`Yun download` 部分思路来源于 `Scrapy` 提供的大量设计灵感。
 
 ## 安装
 

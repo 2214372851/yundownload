@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 import aiofiles
-from httpx import Client, Response, AsyncClient
+from niquests import Session, AsyncSession, Response, AsyncResponse
 
 from yundownload.core import Result, Status
 from yundownload.exception import NotSliceSizeError
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 def stream_downloader(
-        client: Client,
+        client: Session,
         request: 'Request',
         poll_push: Callable
 ) -> Result:
@@ -27,57 +27,61 @@ def stream_downloader(
         request_headers['Range'] = f'bytes={request.save_path.stat().st_size}-'
         request.stat.push(request.save_path.stat().st_size)
     logger.info(f'[{request.save_path.name}] stream request wait...')
-    with client.stream(
-            method=request.method,
-            url=request.url,
-            params=request.params,
-            data=request.data,
-            headers=request_headers,
-            cookies=request.cookies,
-            auth=request.auth,
-            timeout=request.timeout,
-            follow_redirects=request.follow_redirects,
-    ) as response:
-        response: Response
-        if response.status_code == 416:
-            check_range_transborder(
-                client,
-                request
-            )
-            logger.info(f'[{request.save_path.name}] The file already exists')
-            return Result(
-                status=Status.EXIST,
-                request=request
-            )
-        response.raise_for_status()
-        if response.headers.get('Accept-Ranges', None) == 'bytes' or response.status_code == 206:
-            continued_flag = True
-        correct_size = int(response.headers.get('Content-Length', -1))
-        request.save_path.parent.mkdir(exist_ok=True, parents=True)
-        request.correct_size = correct_size
-        if correct_size:
-            if continued_flag and correct_size > request.slice_threshold and not request.stream:
-                logger.info(f'[{request.save_path.name}] select slice download')
-                return Result(
-                    status=Status.SLICE,
-                    request=request
-                )
-        with request.save_path.open('ab' if continued_flag else 'wb') as f:
-            for chunk in response.iter_bytes(chunk_size=request.stream_size):
-                f.write(chunk)
-                request.stat.push(len(chunk))
 
-        logger.info(f'[{request.save_path.name}] file download success')
-        result = Result(
-            status=Status.SUCCESS,
+    response = client.request(
+        method=request.method,
+        url=request.url,
+        timeout=request.timeout,
+        params=request.params,
+        data=request.data,
+        headers=request_headers,
+        cookies=request.cookies,
+        auth=request.auth,
+        stream=True
+    )
+    logger.info(f'[{request.save_path.name}] stream request success')
+    if response.status_code == 416:
+        check_range_transborder(
+            client,
+            request
+        )
+        logger.info(f'[{request.save_path.name}] The file already exists')
+        return Result(
+            status=Status.EXIST,
             request=request
         )
-        request.success_callback(result)
-        return result
+    response.raise_for_status()
+    if response.headers.get('Accept-Ranges', None) == 'bytes' or response.status_code == 206:
+        continued_flag = True
+    elif response.headers.get('Content-Length', None) is not None and not request.save_path.exists():
+        continued_flag = True
+
+    correct_size = int(response.headers.get('Content-Length', -1))
+    request.save_path.parent.mkdir(exist_ok=True, parents=True)
+    request.correct_size = correct_size
+    if correct_size:
+        if continued_flag and correct_size > request.slice_threshold and not request.stream:
+            logger.info(f'[{request.save_path.name}] select slice download')
+            return Result(
+                status=Status.SLICE,
+                request=request
+            )
+    with request.save_path.open('ab' if continued_flag else 'wb') as f:
+        for chunk in response.iter_content(request.stream_size):
+            f.write(chunk)
+            request.stat.push(len(chunk))
+
+    logger.info(f'[{request.save_path.name}] file download success')
+    result = Result(
+        status=Status.SUCCESS,
+        request=request
+    )
+    request.success_callback(result)
+    return result
 
 
 def slice_downloader(
-        client: Client,
+        client: Session,
         request: 'Request',
         poll_push: Callable
 ) -> Result:
@@ -120,7 +124,7 @@ def slice_downloader(
 
 
 def chunk_downloader(
-        client: Client,
+        client: Session,
         request: 'Request',
         start: int,
         end: int,
@@ -143,32 +147,32 @@ def chunk_downloader(
             if chunk_start_size == request.correct_size:
                 return True, None
     try:
-        with client.stream(
-                method=request.method,
-                url=request.url,
-                params=request.params,
-                data=request.data,
-                headers=headers,
-                cookies=request.cookies,
-                auth=request.auth,
-                timeout=request.timeout,
-                follow_redirects=request.follow_redirects,
-        ) as response:
-            response: Response
-            response.raise_for_status()
-            with save_path.open('ab') as f:
-                for chunk in response.iter_bytes(chunk_size=request.stream_size):
-                    f.write(chunk)
-                    request.stat.push(len(chunk))
-            logger.info(f'[{save_path}] chunk download success')
-            return True, None
+        response = client.request(
+            method=request.method,
+            url=request.url,
+            params=request.params,
+            data=request.data,
+            headers=headers,
+            cookies=request.cookies,
+            auth=request.auth,
+            timeout=request.timeout,
+            stream=True
+        )
+        response: Response
+        response.raise_for_status()
+        with save_path.open('ab') as f:
+            for chunk in response.iter_content(chunk_size=request.stream_size):
+                f.write(chunk)
+                request.stat.push(len(chunk))
+        logger.info(f'[{save_path}] chunk download success')
+        return True, None
     except Exception as e:
         logger.error(f'[{save_path}] Chunk download error {e}', exc_info=True)
         return False, e
 
 
 async def async_stream_downloader(
-        client: AsyncClient,
+        client: AsyncSession,
         request: 'Request',
         semaphore: asyncio.Semaphore
 ) -> Result:
@@ -180,57 +184,60 @@ async def async_stream_downloader(
         await request.stat.apush(request.save_path.stat().st_size)
     logger.info(f'[{request.save_path.name}] stream request wait...')
     async with semaphore:
-        async with client.stream(
-                method=request.method,
-                url=request.url,
-                params=request.params,
-                data=request.data,
-                headers=request_headers,
-                cookies=request.cookies,
-                auth=request.auth,
-                timeout=request.timeout,
-                follow_redirects=request.follow_redirects,
-        ) as response:
-            logger.info(f'[{request.save_path.name}] stream request success')
-            response: Response
-            if response.status_code == 416:
-                await async_check_range_transborder(
-                    client,
-                    request
-                )
-                logger.info(f'[{request.save_path.name}] The file already exists')
-                return Result(
-                    status=Status.EXIST,
-                    request=request
-                )
-            response.raise_for_status()
-            if response.headers.get('Accept-Ranges', None) == 'bytes' or response.status_code == 206:
-                continued_flag = True
-            correct_size = int(response.headers.get('Content-Length', -1))
-            request.save_path.parent.mkdir(exist_ok=True, parents=True)
-            request.correct_size = correct_size
-            if correct_size:
-                if continued_flag and correct_size > request.slice_threshold and not request.stream:
-                    return Result(
-                        status=Status.SLICE,
-                        request=request
-                    )
-            async with aiofiles.open(request.save_path, 'ab' if continued_flag else 'wb') as f:
-                async for chunk in response.aiter_bytes(chunk_size=request.stream_size):
-                    await f.write(chunk)
-                    await request.stat.apush(len(chunk))
-
-            logger.info(f'[{request.save_path.name}] file download success')
-            result = Result(
-                status=Status.SUCCESS,
+        response = await client.request(
+            method=request.method,
+            url=request.url,
+            params=request.params,
+            data=request.data,
+            headers=request_headers,
+            cookies=request.cookies,
+            auth=request.auth,
+            timeout=request.timeout,
+            stream=True
+        )
+        logger.info(f'[{request.save_path.name}] stream request success')
+        response: AsyncResponse
+        if response.status_code == 416:
+            await async_check_range_transborder(
+                client,
+                request
+            )
+            logger.info(f'[{request.save_path.name}] The file already exists')
+            return Result(
+                status=Status.EXIST,
                 request=request
             )
-            await request.asuccess_callback(result)
-            return result
+        response.raise_for_status()
+        if response.headers.get('Accept-Ranges', None) == 'bytes' or response.status_code == 206:
+            continued_flag = True
+        elif response.headers.get('Content-Length', None) is not None and not request.save_path.exists():
+            continued_flag = True
+
+        correct_size = int(response.headers.get('Content-Length', -1))
+        request.save_path.parent.mkdir(exist_ok=True, parents=True)
+        request.correct_size = correct_size
+        if correct_size:
+            if continued_flag and correct_size > request.slice_threshold and not request.stream:
+                return Result(
+                    status=Status.SLICE,
+                    request=request
+                )
+        async with aiofiles.open(request.save_path, 'ab' if continued_flag else 'wb') as f:
+            async for chunk in response.aiter_bytes(chunk_size=request.stream_size):
+                await f.write(chunk)
+                await request.stat.apush(len(chunk))
+
+        logger.info(f'[{request.save_path.name}] file download success')
+        result = Result(
+            status=Status.SUCCESS,
+            request=request
+        )
+        await request.asuccess_callback(result)
+        return result
 
 
 async def async_slice_downloader(
-        client: AsyncClient,
+        client: AsyncSession,
         request: 'Request',
         semaphore: asyncio.Semaphore
 ) -> Result:
@@ -273,7 +280,7 @@ async def async_slice_downloader(
 
 
 async def async_chunk_downloader(
-        client: AsyncClient,
+        client: AsyncSession,
         request: 'Request',
         start: int,
         end: int,
@@ -297,25 +304,27 @@ async def async_chunk_downloader(
                 return True, None
     try:
         async with semaphore:
-            async with client.stream(
-                    method=request.method,
-                    url=request.url,
-                    params=request.params,
-                    data=request.data,
-                    headers=headers,
-                    cookies=request.cookies,
-                    auth=request.auth,
-                    timeout=request.timeout,
-                    follow_redirects=request.follow_redirects,
-            ) as response:
-                response: Response
-                response.raise_for_status()
-                async with aiofiles.open(save_path, 'ab') as f:
-                    async for chunk in response.aiter_bytes(chunk_size=request.stream_size):
-                        await f.write(chunk)
-                        await request.stat.apush(len(chunk))
-                logger.info(f'[{save_path}] chunk download success')
-                return True, None
+            response = await client.request(
+                method=request.method,
+                url=request.url,
+                params=request.params,
+                data=request.data,
+                headers=headers,
+                cookies=request.cookies,
+                auth=request.auth,
+                timeout=request.timeout,
+                stream=True
+            )
+            response: AsyncResponse
+            response.raise_for_status()
+            async with aiofiles.open(save_path, 'ab') as f:
+                async for chunk in await response.iter_content(chunk_size=request.stream_size):
+                    await f.write(chunk)
+                    await request.stat.apush(len(chunk))
+                    logger.info(f'[{len(chunk)} {request.stream_size}] chunk download')
+
+            logger.info(f'[{save_path}] chunk download success')
+            return True, None
     except Exception as e:
         logger.error(f'[{save_path}] Chunk download error {e}', exc_info=True)
         return False, e

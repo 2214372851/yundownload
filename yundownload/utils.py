@@ -1,12 +1,12 @@
 import asyncio
-import time
 import platform
+import time
 import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import aiofiles
-from httpx import Client, AsyncClient
+from niquests import Session, AsyncSession
 
 from yundownload.core import Status
 from yundownload.exception import FileRangeTransBorderError
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def check_range_transborder(
-        client: Client,
+        client: Session,
         request: 'Request'
 ) -> None:
     try:
@@ -34,7 +34,7 @@ def check_range_transborder(
 
 
 async def async_check_range_transborder(
-        client: AsyncClient,
+        client: AsyncSession,
         request: 'Request'
 ) -> None:
     try:
@@ -51,45 +51,45 @@ async def async_check_range_transborder(
 
 
 def get_stream_server_size(
-        client: Client,
+        client: Session,
         request: 'Request'
 ) -> int:
-    with client.stream(
-            method=request.method,
-            url=request.url,
-            params=request.params,
-            data=request.data,
-            headers=request.headers,
-            cookies=request.cookies,
-            auth=request.auth,
-            timeout=request.timeout,
-            follow_redirects=request.follow_redirects,
-    ) as response:
-        response.raise_for_status()
-        return int(response.headers.get('Content-Length', 0))
+    response = client.request(
+        method=request.method,
+        url=request.url,
+        params=request.params,
+        data=request.data,
+        headers=request.headers,
+        cookies=request.cookies,
+        auth=request.auth,
+        timeout=request.timeout,
+        stream=True
+    )
+    response.raise_for_status()
+    return int(response.headers.get('Content-Length', 0))
 
 
 async def async_get_stream_server_size(
-        client: AsyncClient,
+        client: AsyncSession,
         request: 'Request'
 ) -> int:
-    async with client.stream(
-            method=request.method,
-            url=request.url,
-            params=request.params,
-            data=request.data,
-            headers=request.headers,
-            cookies=request.cookies,
-            auth=request.auth,
-            timeout=request.timeout,
-            follow_redirects=request.follow_redirects,
-    ) as response:
-        response.raise_for_status()
-        return int(response.headers.get('Content-Length', 0))
+    response = await client.request(
+        method=request.method,
+        url=request.url,
+        params=request.params,
+        data=request.data,
+        headers=request.headers,
+        cookies=request.cookies,
+        auth=request.auth,
+        timeout=request.timeout,
+        stream=True
+    )
+    response.raise_for_status()
+    return int(response.headers.get('Content-Length', 0))
 
 
 def get_head_server_size(
-        client: Client,
+        client: Session,
         request: 'Request'
 ) -> int:
     response = client.head(
@@ -99,14 +99,13 @@ def get_head_server_size(
         cookies=request.cookies,
         auth=request.auth,
         timeout=request.timeout,
-        follow_redirects=request.follow_redirects,
     )
     response.raise_for_status()
     return int(response.headers.get('Content-Length'))
 
 
 async def async_get_head_server_size(
-        client: AsyncClient,
+        client: AsyncSession,
         request: 'Request'
 ) -> int:
     response = await client.head(
@@ -116,7 +115,6 @@ async def async_get_head_server_size(
         cookies=request.cookies,
         auth=request.auth,
         timeout=request.timeout,
-        follow_redirects=request.follow_redirects,
     )
     response.raise_for_status()
     return int(response.headers.get('Content-Length'))

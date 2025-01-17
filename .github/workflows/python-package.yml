@@ -51,22 +51,6 @@ jobs:
         run: |
           poetry build
 
-      - name: List dist directory
-        run: |
-          ls -la ./dist
-
-      - name: Create GitHub Release
-        if: github.event_name != 'pull_request'
-        uses: actions/create-release@v1
-        id: create_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.NEW_VERSION }}
-          release_name: Release v${{ env.NEW_VERSION }}
-          draft: false
-          prerelease: false
-
       - name: set pypi api token
         run: |
           poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
@@ -80,14 +64,3 @@ jobs:
       - name: Publish to PyPI
         run: |
           poetry publish
-
-      - name: Upload Release Asset
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/naive-${{ env.NEW_VERSION }}-py3-none-any.whl
-          asset_name: naive-${{ env.NEW_VERSION }}-py3-none-any.whl
-          asset_content_type: application/zip
