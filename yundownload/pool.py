@@ -4,8 +4,7 @@ from abc import abstractmethod
 from concurrent.futures import ThreadPoolExecutor, wait, Future
 from typing import TYPE_CHECKING, Callable, Optional, Awaitable
 
-import httpx
-from httpx import Client, AsyncClient
+from niquests import Session, AsyncSession
 
 from yundownload.core import Retry, Result, Status, Proxies, Auth
 from yundownload.downloader import stream_downloader, slice_downloader, async_stream_downloader, async_slice_downloader
@@ -36,7 +35,8 @@ class BaseDP:
         pass
 
     @abstractmethod
-    def _task_start(self, item: 'Request', func: Callable[[Client | AsyncClient, 'Request'], Result]):
+    def _task_start(self, item: 'Request',
+                    func: Callable[[Session | AsyncSession, 'Request'], Result]):
         pass
 
     @abstractmethod
@@ -58,30 +58,27 @@ class DownloadPools(BaseDP):
         self._retry = retry
         self._max_workers = max_workers
         self._thread_pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=2 * max_workers)
-        self.client = httpx.Client(
-            transport=httpx.HTTPTransport(
-                retries=self._retry.retry_connect
-            ),
-            timeout=timeout,
-            follow_redirects=True,
-            verify=verify,
-            mounts=proxies if proxies is None else {
-                "http://": httpx.HTTPTransport(proxy=proxies.http),
-                "https://": httpx.HTTPTransport(proxy=proxies.https),
-            },
-            auth=None if auth is None else httpx.BasicAuth(
-                username=auth.username,
-                password=auth.password
-            )
+        self.timeout = timeout
+        self.client = Session(
+            retries=retry.retry_connect
         )
+        if proxies is not None:
+            self.client.mounts = {
+                "http": proxies.http,
+                "https": proxies.https,
+            }
+        if auth is not None:
+            self.client.auth = (auth.username, auth.password)
+        self.client.verify = verify
 
     def _task_start(self, item: 'Request',
-                    func: Callable[['Client', 'Request', Callable], Result]) -> Result:
+                    func: Callable[['Session', 'Request', Callable], Result]) -> Result:
         return func(self.client, item, self._pool_submit)
 
     def push(self, item: 'Request'):
         logger.info(f'[{item.save_path.name}] push task')
         while len([1 for item in self._future_list if not item.done()]) >= self._max_workers:
+            logger.info('push task wait...')
             time.sleep(3)
         future: Future = self._pool_submit(self._task_handle, item)
         self._future_list.append(future)
@@ -156,30 +153,27 @@ class AsyncDownloadPools(BaseDP):
         self._retry = retry
         self._semaphore: asyncio.Semaphore = asyncio.Semaphore(max_workers)
         self._max_workers = max_workers
-        self.client = AsyncClient(
-            transport=httpx.AsyncHTTPTransport(
-                retries=self._retry.retry_connect
-            ),
-            timeout=timeout,
-            follow_redirects=True,
-            verify=verify,
-            mounts=proxies if proxies is None else {
-                "http://": httpx.AsyncHTTPTransport(proxy=proxies.http),
-                "https://": httpx.AsyncHTTPTransport(proxy=proxies.https),
-            },
-            auth=None if auth is None else httpx.BasicAuth(
-                username=auth.username,
-                password=auth.password
-            )
+        self.timeout = timeout
+        self.client = AsyncSession(
+            retries=retry.retry_connect
         )
+        if proxies is not None:
+            self.client.mounts = {
+                "http": proxies.http,
+                "https": proxies.https,
+            }
+        if auth is not None:
+            self.client.auth = (auth.username, auth.password)
+        self.client.verify = verify
 
     async def _task_start(self, item: 'Request',
-                          func: Callable[[AsyncClient, 'Request', asyncio.Semaphore], Awaitable[Result]]):
+                          func: Callable[[AsyncSession, 'Request', asyncio.Semaphore], Awaitable[Result]]):
         return await func(self.client, item, self._semaphore)
 
     async def push(self, item: 'Request'):
         logger.info(f'[{item.save_path.name}] push task')
         while len([1 for item in self._future_list if not item.done()]) >= self._max_workers:
+            logger.info('push task wait...')
             await asyncio.sleep(3)
         future = asyncio.create_task(self._task_handle(item))
         self._future_list.append(future)
@@ -230,7 +224,7 @@ class AsyncDownloadPools(BaseDP):
 
     async def close(self):
         await self.results()
-        await self.client.aclose()
+        await self.client.close()
         logger.info('yundownload close')
 
     async def __aenter__(self):

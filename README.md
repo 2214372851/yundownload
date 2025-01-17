@@ -72,6 +72,9 @@ save_path2<fyd>download_url2
 
 # Update log
 
+- V 0.5.0
+  - We thought that a faster underlying framework would make downloads faster, so we removed the original request module (httpx) and used a new download module (niquests).
+  - And optimized the UI of the terminal tool
 - V 0.4.11
   - Optimized type prompts and load command support
 - V 0.4.2

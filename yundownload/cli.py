@@ -6,7 +6,10 @@ from typing import Iterator
 from typing import List
 
 from rich.console import Console
-from rich.progress import Progress
+from rich.progress import Progress, SpinnerColumn, BarColumn, DownloadColumn, TransferSpeedColumn, TimeElapsedColumn, \
+    TimeRemainingColumn
+
+TimeElapsedColumn, TimeRemainingColumn
 from rich.table import Table
 
 from yundownload.core import Retry, Status
@@ -24,19 +27,35 @@ def render_ui(requests: List[Request], refresh_time: int = 5):
 
     console = Console()
 
-    with Progress(console=console) as progress:
-        for request in requests:
-            request.meta['task'] = progress.add_task(f"[red]{request.save_path.name}...", total=1)
+    with Progress(
+            "[progress.description]{task.description}",
+            SpinnerColumn(finished_text="[green]✔"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            "[yellow]⏱",
+            TimeElapsedColumn(),
+            "[cyan]⏳",
+            TimeRemainingColumn(),
+            console=console
+    ) as progress:
 
         is_ok = False
+
         while not is_ok:
-            console.clear()
             console.print(table)
             speed = 0
             for request in requests:
-                percentage = request.stat.percentage
-                progress.update(request.meta['task'], completed=percentage)
-                speed += request.stat.speed
+                if 'task' not in request.meta:
+                    if request.correct_size:
+                        request.meta['task'] = progress.add_task(
+                            f"[red]{request.save_path.name}...", total=request.correct_size)
+                else:
+                    download_size = request.stat.download_size
+                    progress.update(request.meta['task'], completed=download_size)
+                    speed += request.stat.speed
+                    if download_size == request.correct_size:
+                        progress.update(request.meta['task'], visible=False)
             console.print(f"[bold green]Speed: {convert_bytes_per_second(speed)}")
             is_ok = all(bool((Status.SUCCESS | Status.FAIL | Status.EXIST) & request.status) for request in requests)
             time.sleep(refresh_time)
@@ -51,22 +70,40 @@ async def arender_ui(requests: List[Request], refresh_time: int = 5):
 
     console = Console()
 
-    with Progress(console=console) as progress:
-        for request in requests:
-            request.meta['task'] = progress.add_task(f"[red]{request.save_path.name}...", total=1)
+    with Progress(
+            "[progress.description]{task.description}",
+            SpinnerColumn(finished_text="[green]✔"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            "[yellow]⏱",
+            TimeElapsedColumn(),
+            "[cyan]⏳",
+            TimeRemainingColumn(),
+            console=console
+    ) as progress:
 
         is_ok = False
+
         while not is_ok:
-            console.clear()
             console.print(table)
             speed = 0
             for request in requests:
-                percentage = request.stat.percentage
-                progress.update(request.meta['task'], completed=percentage)
-                speed += request.stat.speed
+                if 'task' not in request.meta:
+                    if request.correct_size:
+                        request.meta['task'] = progress.add_task(
+                            f"[red]{request.save_path.name}...", total=request.correct_size)
+                else:
+                    download_size = request.stat.download_size
+                    progress.update(request.meta['task'], completed=download_size)
+                    speed += request.stat.speed
+                    if download_size == request.correct_size:
+                        progress.update(request.meta['task'], visible=False)
             console.print(f"[bold green]Speed: {convert_bytes_per_second(speed)}")
             is_ok = all(bool((Status.SUCCESS | Status.FAIL | Status.EXIST) & request.status) for request in requests)
             await asyncio.sleep(refresh_time)
+
+
 
 
 def get_version():
@@ -99,6 +136,7 @@ def cli() -> None:
     download.set_defaults(help=download.print_help)
     parser.set_defaults(help=parser.print_help)
     args = parser.parse_args()
+    print(args)
     if args.subcommand == 'download':
         request = Request(
             url=args.url,
