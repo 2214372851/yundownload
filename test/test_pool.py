@@ -2,9 +2,9 @@ def pool_download():
     from yundownload import Request, DownloadPools
     from pathlib import Path
     request = Request(
-        url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-        save_path='./test_tmp/qq.exe',
-        slice_threshold=100 * 1024 * 1024,
+        url='https://ftp.ebi.ac.uk/empiar/world_availability/10633/data/rawframes/ts_004_037_-57.0.tif',
+        save_path='./ts_004_037_-57.0.tif',
+        slice_threshold=10 * 1024 * 1024,
     )
     with DownloadPools(max_workers=3) as pool:
         pool.push(request)

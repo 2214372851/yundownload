@@ -60,7 +60,9 @@ class DownloadPools(BaseDP):
         self._thread_pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=2 * max_workers)
         self.timeout = timeout
         self.client = Session(
-            retries=retry.retry_connect
+            retries=retry.retry_connect,
+            pool_maxsize=max_workers,
+            pool_connections=max_workers
         )
         if proxies is not None:
             self.client.mounts = {
@@ -155,7 +157,9 @@ class AsyncDownloadPools(BaseDP):
         self._max_workers = max_workers
         self.timeout = timeout
         self.client = AsyncSession(
-            retries=retry.retry_connect
+            retries=retry.retry_connect,
+            pool_maxsize=max_workers,
+            pool_connections=max_workers
         )
         if proxies is not None:
             self.client.mounts = {

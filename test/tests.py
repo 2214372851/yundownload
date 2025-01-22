@@ -1,23 +1,16 @@
-import time
-from rich.progress import Progress, BarColumn, DownloadColumn,TransferSpeedColumn, SpinnerColumn, TimeRemainingColumn, TimeElapsedColumn, TransferSpeedColumn
+def pool_download():
+    from yundownload import Request, DownloadPools, render_ui
+    from pathlib import Path
+    request = Request(
+        url='https://ftp.ebi.ac.uk/empiar/world_availability/10633/data/rawframes/ts_004_037_-57.0.tif',
+        save_path='./test_tmp/ts_004_037_-57.0.tif',
+        slice_threshold=10 * 1024 * 1024,
+    )
+    with DownloadPools(max_workers=3) as pool:
+        pool.push(request)
+        render_ui([request])
+    # Path('./test_tmp/qq.exe').unlink()
+    return request.is_success()
 
-with Progress(
-        "[progress.description]{task.description}",
-        SpinnerColumn(finished_text="[green]✔"),
-        BarColumn(),
-        DownloadColumn(),
-        TransferSpeedColumn(),
-        "[yellow]⏱",
-        TimeElapsedColumn(),
-        "[cyan]⏳",
-        TimeRemainingColumn()
-) as progress:
-    description = "[red]Loading"
-    task = progress.add_task(description, total=1000)
-    for p in range(1, 1001):
-        if p != 1000:
-            description = "[red]Loading"
-        else:
-            description = "[green]Finished"
-        progress.update(task, completed=p, description=description)
-        time.sleep(0.02)
+
+pool_download()

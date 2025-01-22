@@ -1,4 +1,5 @@
 import asyncio
+import math
 import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
@@ -95,6 +96,7 @@ def slice_downloader(
             f'file is too large, check whether the slices are too small')
     slice_flag_name = request.save_path.name.replace('.', '-')
     future_list = []
+    logger.info(f'[{request.save_path}] <{math.ceil(request.correct_size / request.slice_size)}> slices')
     for start in range(0, request.correct_size, request.slice_size):
         end = start + request.slice_size - 1
         chunk_path = request.save_path.parent.joinpath(
@@ -167,7 +169,7 @@ def chunk_downloader(
         logger.info(f'[{save_path}] chunk download success')
         return True, None
     except Exception as e:
-        logger.error(f'[{save_path}] Chunk download error {e}', exc_info=True)
+        logger.error(f'[{save_path}] chunk download error {e}', exc_info=True)
         return False, e
 
 
@@ -251,6 +253,7 @@ async def async_slice_downloader(
             f'file is too large, check whether the slices are too small')
     slice_flag_name = request.save_path.name.replace('.', '-')
     task_list = []
+    logger.info(f'[{request.save_path}] <{math.ceil(request.correct_size / request.slice_size)}> slices')
     for start in range(0, request.correct_size, request.slice_size):
         end = start + request.slice_size - 1
         chunk_path = request.save_path.parent.joinpath(
@@ -321,7 +324,6 @@ async def async_chunk_downloader(
                 async for chunk in await response.iter_content(chunk_size=request.stream_size):
                     await f.write(chunk)
                     await request.stat.apush(len(chunk))
-                    logger.info(f'[{len(chunk)} {request.stream_size}] chunk download')
 
             logger.info(f'[{save_path}] chunk download success')
             return True, None
