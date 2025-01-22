@@ -225,7 +225,7 @@ async def async_stream_downloader(
                     request=request
                 )
         async with aiofiles.open(request.save_path, 'ab' if continued_flag else 'wb') as f:
-            async for chunk in response.aiter_bytes(chunk_size=request.stream_size):
+            async for chunk in await response.iter_content(chunk_size=request.stream_size):
                 await f.write(chunk)
                 await request.stat.apush(len(chunk))
 
