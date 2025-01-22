@@ -57,7 +57,7 @@ class DownloadPools(BaseDP):
     ) -> None:
         self._retry = retry
         self._max_workers = max_workers
-        self._thread_pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=2 * max_workers)
+        self._thread_pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=max_workers)
         self.timeout = timeout
         self.client = Session(
             retries=retry.retry_connect,
@@ -79,7 +79,7 @@ class DownloadPools(BaseDP):
 
     def push(self, item: 'Request'):
         logger.info(f'[{item.save_path.name}] push task')
-        while len([1 for item in self._future_list if not item.done()]) >= self._max_workers:
+        while len([1 for item in self._future_list if not item.done()]) >= self._max_workers - 1:
             logger.info('push task wait...')
             time.sleep(3)
         future: Future = self._pool_submit(self._task_handle, item)

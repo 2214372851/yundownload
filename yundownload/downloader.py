@@ -29,7 +29,7 @@ def stream_downloader(
         request.stat.push(request.save_path.stat().st_size)
     logger.info(f'[{request.save_path.name}] stream request wait...')
 
-    response = client.request(
+    with client.request(
         method=request.method,
         url=request.url,
         timeout=request.timeout,
@@ -39,38 +39,38 @@ def stream_downloader(
         cookies=request.cookies,
         auth=request.auth,
         stream=True
-    )
-    logger.info(f'[{request.save_path.name}] stream request success')
-    if response.status_code == 416:
-        check_range_transborder(
-            client,
-            request
-        )
-        logger.info(f'[{request.save_path.name}] The file already exists')
-        return Result(
-            status=Status.EXIST,
-            request=request
-        )
-    response.raise_for_status()
-    if response.headers.get('Accept-Ranges', None) == 'bytes' or response.status_code == 206:
-        continued_flag = True
-    elif response.headers.get('Content-Length', None) is not None and not request.save_path.exists():
-        continued_flag = True
-
-    correct_size = int(response.headers.get('Content-Length', -1))
-    request.save_path.parent.mkdir(exist_ok=True, parents=True)
-    request.correct_size = correct_size
-    if correct_size:
-        if continued_flag and correct_size > request.slice_threshold and not request.stream:
-            logger.info(f'[{request.save_path.name}] select slice download')
+    ) as response:
+        logger.info(f'[{request.save_path.name}] stream request success')
+        if response.status_code == 416:
+            check_range_transborder(
+                client,
+                request
+            )
+            logger.info(f'[{request.save_path.name}] The file already exists')
             return Result(
-                status=Status.SLICE,
+                status=Status.EXIST,
                 request=request
             )
-    with request.save_path.open('ab' if continued_flag else 'wb') as f:
-        for chunk in response.iter_content(request.stream_size):
-            f.write(chunk)
-            request.stat.push(len(chunk))
+        response.raise_for_status()
+        if response.headers.get('Accept-Ranges', None) == 'bytes' or response.status_code == 206:
+            continued_flag = True
+        elif response.headers.get('Content-Length', None) is not None and not request.save_path.exists():
+            continued_flag = True
+
+        correct_size = int(response.headers.get('Content-Length', -1))
+        request.save_path.parent.mkdir(exist_ok=True, parents=True)
+        request.correct_size = correct_size
+        if correct_size:
+            if continued_flag and correct_size > request.slice_threshold and not request.stream:
+                logger.info(f'[{request.save_path.name}] select slice download')
+                return Result(
+                    status=Status.SLICE,
+                    request=request
+                )
+        with request.save_path.open('ab' if continued_flag else 'wb') as f:
+            for chunk in response.iter_content(request.stream_size):
+                f.write(chunk)
+                request.stat.push(len(chunk))
 
     logger.info(f'[{request.save_path.name}] file download success')
     result = Result(
@@ -149,7 +149,7 @@ def chunk_downloader(
             if chunk_start_size == request.correct_size:
                 return True, None
     try:
-        response = client.request(
+         with client.request(
             method=request.method,
             url=request.url,
             params=request.params,
@@ -159,15 +159,15 @@ def chunk_downloader(
             auth=request.auth,
             timeout=request.timeout,
             stream=True
-        )
-        response: Response
-        response.raise_for_status()
-        with save_path.open('ab') as f:
-            for chunk in response.iter_content(chunk_size=request.stream_size):
-                f.write(chunk)
-                request.stat.push(len(chunk))
-        logger.info(f'[{save_path}] chunk download success')
-        return True, None
+        ) as response:
+            response: Response
+            response.raise_for_status()
+            with save_path.open('ab') as f:
+                for chunk in response.iter_content(chunk_size=request.stream_size):
+                    f.write(chunk)
+                    request.stat.push(len(chunk))
+            logger.info(f'[{save_path}] chunk download success')
+            return True, None
     except Exception as e:
         logger.error(f'[{save_path}] chunk download error {e}', exc_info=True)
         return False, e
