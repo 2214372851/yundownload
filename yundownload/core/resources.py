@@ -14,10 +14,11 @@ class Resources:
                  http_params: dict = None,
                  http_headers: dict = None,
                  http_data: dict = None,
+                 http_proxy: dict[str, str] = None,
                  http_cookies: dict = None,
                  http_timeout: int = 30,
                  http_auth: tuple[str, str] = None,
-                 http_slice_threshold: int = 204 * 1024 * 1024,
+                 http_slice_threshold: int = 2048 * 1024 * 1024,
                  ftp_timeout: int = 30,
                  ftp_port: int = 21,
                  sftp_port: int = 22,
@@ -36,7 +37,8 @@ class Resources:
         :param http_method: HTTP protocol request method
         :param http_params: HTTP request parameters (Valid for M3U8 protocol)
         :param http_headers: HTTP request headers (Valid for M3U8 protocol)
-        :param http_data: HTTP request body
+        :param http_data: HTTP request data
+        :param http_proxy: HTTP request proxy
         :param http_cookies: HTTP request cookie (Valid for M3U8 protocol)
         :param http_timeout: HTTP request timeout period (Valid for M3U8 protocol)
         :param http_auth: HTTP protocol authentication is requested (Valid for M3U8 protocol)
@@ -65,6 +67,7 @@ class Resources:
         self.http_params = http_params
         self.http_headers = http_headers
         self.http_data = http_data
+        self.http_proxy = http_proxy
         self.http_cookies = http_cookies
         self.http_timeout = http_timeout
         self.http_auth = http_auth

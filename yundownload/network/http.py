@@ -21,8 +21,19 @@ class HttpProtocolHandler(BaseProtocolHandler):
 
     def __init__(self):
         super().__init__()
+        self.client: None|httpx.Client = None
+        self.aclient: None|httpx.AsyncClient = None
+        self._method = 'GET'
+        self._slice_threshold = None
+
+    def download(self, resources: 'Resources'):
+        self._slice_threshold = resources.http_slice_threshold
+        self._method = resources.http_method
+
         self.client = httpx.Client(
-            timeout=DEFAULT_TIMEOUT,
+            timeout=resources.http_timeout,
+            auth=resources.http_auth,
+            mounts=resources.http_proxy,
             headers=DEFAULT_HEADERS,
             follow_redirects=True,
             transport=httpx.HTTPTransport(
@@ -30,8 +41,14 @@ class HttpProtocolHandler(BaseProtocolHandler):
                 verify=False
             )
         )
+        self.client.params.merge(resources.http_params)
+        self.client.headers.update(resources.http_headers)
+        self.client.cookies.update(resources.http_cookies)
+
         self.aclient = httpx.AsyncClient(
-            timeout=DEFAULT_TIMEOUT,
+            timeout=resources.http_timeout,
+            auth=resources.http_auth,
+            mounts=resources.http_proxy,
             headers=DEFAULT_HEADERS,
             follow_redirects=True,
             transport=httpx.AsyncHTTPTransport(
@@ -39,16 +56,6 @@ class HttpProtocolHandler(BaseProtocolHandler):
                 verify=False
             )
         )
-        self._method = 'GET'
-        self._slice_threshold = None
-
-    def download(self, resources: 'Resources'):
-        self._slice_threshold = resources.http_slice_threshold
-        self._method = resources.http_method
-        self.client.auth = resources.http_auth
-        self.client.params.merge(resources.http_params)
-        self.client.headers.update(resources.http_headers)
-        self.client.cookies.update(resources.http_cookies)
         return self._match_method(resources)
 
     @staticmethod

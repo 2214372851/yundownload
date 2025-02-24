@@ -8,6 +8,9 @@ from yundownload.utils.logger import logger
 
 
 class DynamicConcurrencyController:
+    """
+    Dynamic concurrency control classes
+    """
     def __init__(self, min_concurrency=1, max_concurrency=30, window_size=100):
         # 并发控制参数
         self.min_concurrency = min_concurrency
@@ -164,6 +167,9 @@ class DynamicConcurrencyController:
 
 
 class DynamicSemaphore(asyncio.Semaphore):
+    """
+    Dynamic control of concurrent semaphores
+    """
     def __init__(self, dcc: 'DynamicConcurrencyController'):
         initial_permits = len(dcc)
         self._dcc = dcc

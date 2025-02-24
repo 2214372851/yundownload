@@ -18,65 +18,53 @@ Yun download 是 Python 3 的文件下载器，它提供流式下载和文件分
 
 ------
 
-使用 pip 安装 Yun download：
+## 安装
 
-`$ pip install yundownload`
+使用 pip 安装：
+
+```
+$ pip install yundownload
+```
+
+`Yun download` 需要 `Python 3.10+`
+
+## 示例
 
 现在，让我们开始第一个示例：
 
 ```python
-from yundownload import DownloadPools, Request
+from yundownload import Downloader, Resources
 
 
-with DownloadPools() as pool:
-    pool.push(Request(
-      url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-      save_path='./1.exe'
-    ))
+if __name__ == '__main__':
+    with Downloader() as d:
+        r1 = d.submit(Resources(
+            uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
+            save_path="DeepSeek-R1-AWQ/model-00074-of-00074.safetensors"
+        ))
+        r2 = d.submit(Resources(
+            uri='ftp://yunhai:admin123@192.168.6.99/data/spider_temp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip',
+            save_path='0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip'
+        ))
+        r3 = d.submit(Resources(
+            uri='sftp://root:20020308@192.168.6.99/root/quick_start.sh',
+            save_path='quick_start.sh'
+        ))
+        r4 = d.submit(Resources(
+            uri='https://c1.7bbffvip.com/video/xiantaiyoushu/%E7%AC%AC01%E9%9B%86/index.m3u8',
+            save_path='./video/download.mp4',
+            metadata={'test': 'test'}
+        ))
+    print(r1.result(), r2.result(), r3.result(), r4.result())
 ```
 
-或者，使用命令行的方式：
+> 命令行在当前版本 `0.6.0-beta.1` 中尚未完成支持，将在后续完善此部分内容
 
-> 命令行已经内置无需安装，使用前请确保当前环境已经安装 Yun download，命令行模式具有局限性，对于有一定要求的文件下载不建议使用
 
-```shell
-$ yundownload --help
-
-usage: yundownload [-h] {load,download} ...
-
-Yun Downloader
-
-positional arguments:
-  {load,download}
-    load           Load a request
-    download       Download a file
-
-options:
-  -h, --help       show this help message and exit
-```
-
-命令行下载文件
-
-```shell
-$ yundownload download 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe' './1.exe'
-
-QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M [00:05<01:15, 2.65MB/s] 
-```
-
-yfd文件命令行读取下载（只适用于简单场景）
-```shell
-$ yundownload load ./test.yfd
-```
-
-fyd文件格式
-```text
-save_path1<yfd>download_url1
-save_path2<yfd>download_url2
-```
 
 ## 特征
 
-Yun download 建立在 `niquests` 模块上，并为您提供：
+Yun download 建立在 `httpx` 模块上，并为您提供：
 
 - 广泛的文件下载兼容
 - 连接限速的连接分片加速
@@ -87,30 +75,35 @@ Yun download 建立在 `niquests` 模块上，并为您提供：
 - 完整的类型注释
 - 命令行模式
 
-当然一些 `niquests` 底层的特性，也继承而来
+当然一些 `httpx` 底层的特性，也继承而来
 
 
-## 文档
 
-要了解所有基础知识，请转到最新[快速入门](v3-quickstart.md)。
+## 更多内容
+
+要了解所有基础知识，请转到最新[快速入门](v6-quickstart.md)。
+
+
+
+## 后续支持
+
+- 命令行工具
+- 分布式支持
+
+
+
+## 问题相关
+
+如果你在使用过程中发现问题欢迎提交Issue，如果问题很着急你也可以通过邮箱 `bybxbwg@foxmail.com` 与我取得联系
+
+
 
 ## 依赖项
 
 `Yun download` 项目依赖于这些优秀的库：
 
-- `niquests`- 网络请求。
-- `aiofiles`- 异步文件读写。
-- `rich`-命令行进度条。
-- `certifi`-SSL 证书。
-- `idna`- 国际化域名支持。
-- `sniffio`- 异步库自动检测。
-
-## 安装
-
-使用 pip 安装：
-
-```
-$ pip install yundownload
-```
-
-`Yun download` 需要 `Python 3.10+`
+- [httpx](https://github.com/projectdiscovery/httpx)- 网络请求。
+- [aiofiles](https://github.com/Tinche/aiofiles)- 异步文件读写。
+- [paramiko](https://github.com/paramiko/paramiko)- SSH协议连接。
+- [m3u8](https://github.com/globocom/m3u8)- M3U8文件解析。
+- [colorlog](https://github.com/borntyping/python-colorlog)- 彩色日志输出。

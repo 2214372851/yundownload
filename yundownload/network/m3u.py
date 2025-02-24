@@ -6,7 +6,7 @@ from yundownload.utils.tools import retry_async
 from yundownload.utils.core import Result
 from yundownload.network.base import BaseProtocolHandler
 from urllib.parse import urlparse, urljoin
-from httpx import AsyncClient, Response
+from httpx import AsyncClient, Response, Proxy
 import aiofiles
 import m3u8
 
@@ -43,6 +43,7 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 params=resources.http_params,
                 headers=resources.http_headers,
                 cookies=resources.http_cookies,
+                mounts=resources.http_proxy,
                 verify=False
         ) as client:
             tasks = []
@@ -78,11 +79,11 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
         There is no encryption here, you can decrypt it by rewriting the method
         and getting the value via seg['encryption'].
 
-        :param sem:
-        :param index:
-        :param seg:
-        :param save_path:
-        :param client:
+        :param index: Slice index
+        :param seg: Fragment information
+        :param save_path: The path to save the clip
+        :param client: Network connection pooling
+        :param sem: Asynchronous semaphore
         :return:
         """
         async with sem:

@@ -27,6 +27,13 @@ def retry(
         retry_count: int = 1,
         retry_delay: Union[int, tuple[float, float]] = 2
 ):
+    """
+    Retry the decorator
+
+    :param retry_count: Number of retries
+    :param retry_delay: Retry interval
+    :return:
+    """
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         def wrapper(*args, **kwargs) -> T:
             for i in range(retry_count):
@@ -48,13 +55,19 @@ def retry(
 
 
 def retry_async(retry_count: int = 1, retry_delay: Union[int, tuple[float, float]] = 2):
+    """
+    Asynchronous retryer
+
+    :param retry_count: Number of retries
+    :param retry_delay: Retry interval
+    :return:
+    """
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         async def wrapper(*args, **kwargs) -> T:
             for i in range(retry_count):
                 try:
                     return await func(*args, **kwargs)
                 except Exception as e:
-                    logger.error(f"Retry Async {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                     if i == retry_count - 1:
                         logger.error(f"Retry Async {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                         raise e
