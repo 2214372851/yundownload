@@ -1,4 +1,8 @@
-[![PyPI version](https://badge.fury.io/py/yundownload.svg)](https://badge.fury.io/py/yundownload)
+![PyPI - Version](https://img.shields.io/pypi/v/yundownload)
+![PyPI - Downloads](https://img.shields.io/pypi/dw/yundownload)
+![PyPI - License](https://img.shields.io/pypi/l/yundownload)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/yundownload)
+
 
 # Intro
 
@@ -43,6 +47,10 @@ if __name__ == '__main__':
         ))
     print(r1.result(), r2.result(), r3.result(), r4.result())
 ```
+
+> 命令行在当前版本 `0.6.0-beta.2` 支持最简单的下载，将在后续根据情况完善
+
+`yundownload uri save_path`
 
 # Update log
 
