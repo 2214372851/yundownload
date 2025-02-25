@@ -1,0 +1,172 @@
+import asyncio
+from pathlib import Path
+from typing import TYPE_CHECKING
+from yundownload.utils.logger import logger
+from yundownload.utils.tools import retry_async
+from yundownload.utils.core import Result
+from yundownload.network.base import BaseProtocolHandler
+from urllib.parse import urlparse, urljoin
+from httpx import AsyncClient, Response, Proxy
+import aiofiles
+import m3u8
+
+if TYPE_CHECKING:
+    from yundownload.core.resources import Resources
+    from yundownload.utils.equilibrium import DynamicSemaphore
+
+from yundownload.utils import DEFAULT_CHUNK_SIZE
+
+
+class M3U8ProtocolHandler(BaseProtocolHandler):
+    @staticmethod
+    def check_protocol(uri: str) -> bool:
+        parse = urlparse(uri)
+        return parse.scheme in {'http', 'https'} and parse.path.endswith('.m3u8')
+
+    def download(self, resources: 'Resources') -> 'Result':
+        return asyncio.run(self.download_segments(resources))
+
+    async def download_segments(self, resources: 'Resources') -> 'Result':
+        """
+        Download the m3u8 playlist
+
+        :param resources: Resource objects
+        :return: Result
+        """
+        if resources.save_path.exists():
+            return Result.EXIST
+        final_playlist = self.handle_variant_playlist(resources)
+        segments = self.parse_segments(final_playlist)
+        async with AsyncClient(
+                auth=resources.http_auth,
+                timeout=resources.http_timeout,
+                params=resources.http_params,
+                headers=resources.http_headers,
+                cookies=resources.http_cookies,
+                mounts=resources.http_proxy,
+                verify=False
+        ) as client:
+            tasks = []
+            video_path = resources.save_path.parent / f"{resources.save_path.stem}"
+            video_path.mkdir(parents=True, exist_ok=True)
+            self._total = len(segments)
+            segment_paths = []
+            for index, seg in enumerate(segments):
+                segment_path = video_path / f"{index}.ts"
+                tasks.append(
+                    asyncio.create_task(
+                        retry_async(resources.retry, resources.retry_delay)(
+                            self.download_segment
+                        )(index, seg, segment_path, client, resources.semaphore)
+                    )
+                )
+                segment_paths.append(segment_path)
+
+            results = await asyncio.gather(*tasks)
+
+            if all([r & (Result.SUCCESS | Result.EXIST) for r in results]):
+                if not segments[0]['encryption']:
+                    await self.merge_segments(segment_paths, resources.save_path)
+                else:
+                    logger.info("This is a encrypted m3u8, please decrypt it by yourself")
+                return Result.SUCCESS
+            return Result.FAILURE
+
+    async def download_segment(self, index: int, seg: dict, save_path: Path, client: 'AsyncClient',
+                               sem: 'DynamicSemaphore') -> 'Result':
+        """
+        Download the clip
+        There is no encryption here, you can decrypt it by rewriting the method
+        and getting the value via seg['encryption'].
+
+        :param index: Slice index
+        :param seg: Fragment information
+        :param save_path: The path to save the clip
+        :param client: Network connection pooling
+        :param sem: Asynchronous semaphore
+        :return:
+        """
+        async with sem:
+            logger.info(f"Downloading fragments #{index} encryption {bool(seg['encryption'])} from {seg['uri']}")
+            async with client.stream('GET', seg['uri']) as response:
+                response: Response
+                if not response.is_success: sem.record_result(success=False)
+                response.raise_for_status()
+                if save_path.exists() and response.headers.get('Content-Length') == str(save_path.stat().st_size):
+                    sem.record_result(success=True)
+                    await sem.adaptive_update()
+                    return Result.EXIST
+                async with aiofiles.open(save_path, "wb") as f:
+                    async for chunk in response.aiter_bytes(chunk_size=DEFAULT_CHUNK_SIZE):
+                        await f.write(chunk)
+                        self.current_size += len(chunk)
+                sem.record_result(response.elapsed.total_seconds(), True)
+                await sem.adaptive_update()
+            logger.info(f"Download fragments #{index} success from {seg['uri']}")
+            self._steps += 1
+            return Result.SUCCESS
+
+    @staticmethod
+    async def merge_segments(segment_paths: list[Path], save_path: Path):
+        async with aiofiles.open(save_path, "wb") as f:
+            for segment_path in segment_paths:
+                async with aiofiles.open(segment_path, "rb") as segment_file:
+                    chunk_size = DEFAULT_CHUNK_SIZE
+                    while True:
+                        chunk = await segment_file.read(chunk_size)
+                        if not chunk:
+                            break
+                        await f.write(chunk)
+                logger.info(f"Merge fragments #{segment_path} to {save_path}")
+        for segment_path in segment_paths:
+            segment_path.unlink()
+            logger.info(f"Delete fragments #{segment_path}")
+        segment_path.parent.unlink()
+        logger.info(f"Merge fragments success to {save_path}")
+
+    @staticmethod
+    def parse_segments(playlist: m3u8.M3U8) -> list:
+        """解析TS片段信息"""
+        segments = []
+
+        for seg in playlist.segments:
+            segment_info = {
+                'duration': seg.duration,
+                'uri': urljoin(playlist.base_uri, seg.uri),
+                'encryption': None
+            }
+
+            if seg.key:
+                segment_info['encryption'] = {
+                    'method': seg.key.method,
+                    'key_uri': urljoin(playlist.base_uri, seg.key.uri) if seg.key.uri else None,
+                    'iv': seg.key.iv.hex() if seg.key.iv else None
+                }
+
+            segments.append(segment_info)
+        return segments
+
+    @staticmethod
+    def handle_variant_playlist(resources: 'Resources') -> m3u8.M3U8:
+        """处理主播放列表，选择最高码率子列表"""
+        playlist = m3u8.load(resources.uri)
+        if not playlist.is_variant:
+            return playlist
+
+        logger.info(f'm3u8 contains {len(playlist.playlists)} bitrate: {resources.uri} to {resources.save_path}')
+
+        # 选择带宽最高的子播放列表
+        best_playlist = max(
+            playlist.playlists,
+            key=lambda p: p.stream_info.bandwidth
+        )
+
+        logger.info(
+            f'Selected sub-bitrate: {best_playlist.uri}, bindwidth: {best_playlist.stream_info.bandwidth}bps resolution: {best_playlist.stream_info.resolution} codecs: {best_playlist.stream_info.codecs}')
+
+        # 加载子播放列表
+        sub_url = urljoin(playlist.base_uri, best_playlist.uri)
+        return m3u8.load(sub_url)
+
+    def close(self):
+        pass
