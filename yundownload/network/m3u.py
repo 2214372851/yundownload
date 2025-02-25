@@ -35,8 +35,6 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
         """
         if resources.save_path.exists():
             return Result.EXIST
-        final_playlist = self.handle_variant_playlist(resources)
-        segments = self.parse_segments(final_playlist)
         async with AsyncClient(
                 auth=resources.http_auth,
                 timeout=resources.http_timeout,
@@ -46,6 +44,8 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 mounts=resources.http_proxy,
                 verify=False
         ) as client:
+            final_playlist = await self.handle_variant_playlist(client, resources)
+            segments = self.parse_segments(final_playlist)
             tasks = []
             video_path = resources.save_path.parent / f"{resources.save_path.stem}"
             video_path.mkdir(parents=True, exist_ok=True)
@@ -126,7 +126,7 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
 
     @staticmethod
     def parse_segments(playlist: m3u8.M3U8) -> list:
-        """解析TS片段信息"""
+        """Parse TS fragment information"""
         segments = []
 
         for seg in playlist.segments:
@@ -146,16 +146,15 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
             segments.append(segment_info)
         return segments
 
-    @staticmethod
-    def handle_variant_playlist(resources: 'Resources') -> m3u8.M3U8:
-        """处理主播放列表，选择最高码率子列表"""
-        playlist = m3u8.load(resources.uri)
+    async def handle_variant_playlist(self, client: 'AsyncClient', resources: 'Resources') -> 'm3u8.M3U8':
+        """Process the main playlist and select the sub-list with the highest bitrate"""
+        playlist = await self.m3u8_load(client, resources.uri)
         if not playlist.is_variant:
             return playlist
 
         logger.info(f'm3u8 contains {len(playlist.playlists)} bitrate: {resources.uri} to {resources.save_path}')
 
-        # 选择带宽最高的子播放列表
+        # Select the sub-playlist with the highest bandwidth
         best_playlist = max(
             playlist.playlists,
             key=lambda p: p.stream_info.bandwidth
@@ -164,9 +163,15 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
         logger.info(
             f'Selected sub-bitrate: {best_playlist.uri}, bindwidth: {best_playlist.stream_info.bandwidth}bps resolution: {best_playlist.stream_info.resolution} codecs: {best_playlist.stream_info.codecs}')
 
-        # 加载子播放列表
+        # Load the child playlist
         sub_url = urljoin(playlist.base_uri, best_playlist.uri)
-        return m3u8.load(sub_url)
+        return await self.m3u8_load(client, sub_url)
+
+    @staticmethod
+    async def m3u8_load(client: 'AsyncClient', uri: str) -> 'm3u8.M3U8':
+        response = await client.get(uri)
+        response: Response
+        return m3u8.M3U8(response.text, base_uri=urljoin(str(response.url), "."))
 
     def close(self):
         pass

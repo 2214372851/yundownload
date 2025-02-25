@@ -10,7 +10,10 @@
 
 ------
 
-[![PyPI version](https://img.shields.io/pypi/v/yundownload)](https://pypi.org/project/yundownload/)
+![PyPI - Version](https://img.shields.io/pypi/v/yundownload)
+![PyPI - Downloads](https://img.shields.io/pypi/dw/yundownload)
+![PyPI - License](https://img.shields.io/pypi/l/yundownload)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/yundownload)
 
 *Python 简易高效的文件下载器。*
 
@@ -35,7 +38,6 @@ $ pip install yundownload
 ```python
 from yundownload import Downloader, Resources
 
-
 if __name__ == '__main__':
     with Downloader() as d:
         r1 = d.submit(Resources(
@@ -58,9 +60,9 @@ if __name__ == '__main__':
     print(r1.result(), r2.result(), r3.result(), r4.result())
 ```
 
-> 命令行在当前版本 `0.6.0-beta.1` 中尚未完成支持，将在后续完善此部分内容
+> 命令行在当前版本 `0.6.0-beta.2` 支持最简单的下载，将在后续根据情况完善
 
-
+`yundownload uri save_path`
 
 ## 特征
 
@@ -77,26 +79,18 @@ Yun download 建立在 `httpx` 模块上，并为您提供：
 
 当然一些 `httpx` 底层的特性，也继承而来
 
-
-
 ## 更多内容
 
 要了解所有基础知识，请转到最新[快速入门](v6-quickstart.md)。
-
-
 
 ## 后续支持
 
 - 命令行工具
 - 分布式支持
 
-
-
 ## 问题相关
 
 如果你在使用过程中发现问题欢迎提交Issue，如果问题很着急你也可以通过邮箱 `bybxbwg@foxmail.com` 与我取得联系
-
-
 
 ## 依赖项
 
