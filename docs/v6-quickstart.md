@@ -211,20 +211,6 @@ Resources(
 )
 ```
 
-### SFTP 连接超时（仅SFTP可用）
-
-FTP 连接超时以秒为单位传入
-
-```python
-from yundownload import Resources
-
-Resources(
-    uri="sftp://ftpuser:password@127.0.0.1/data/spider_temp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip",
-    save_path="0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip",
-    sftp_timeout=10
-)
-```
-
 ### SFTP 端口（仅SFTP可用）
 
 FTP 端口传入，或者你也可以通过uri携带

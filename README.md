@@ -20,63 +20,50 @@
 # Give an example
 
 ```python
-from yundownload import DownloadPools, Request
+from yundownload import Downloader, Resources
 
-with DownloadPools() as pool:
-    pool.push(Request(
-        url='https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe',
-        save_path='./1.exe'
-    ))
-```
-
-## Command line tool
-
-> In version 0.1.16, a command line tool was added, which can be used as follows:
-
-```shell
-$ yundownload --help
-
-usage: yundownload [-h] {load,download} ...
-
-Yun Downloader
-
-positional arguments:
-  {load,download}
-    load           Load a request
-    download       Download a file
-
-options:
-  -h, --help       show this help message and exit
-```
-
-命令行下载文件
-
-```shell
-$ yundownload download 'https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe' './1.exe'
-
-QQ9.7.17.29225.exe:   6%|██████▎                      | 13.6M/214M [00:05<01:15, 2.65MB/s] 
-```
-
-fyd文件命令行读取下载（只适用于简单场景）
-
-```shell
-$ yundownload load ./test.fyd
-```
-
-fyd文件格式
-
-```text
-save_path1<fyd>download_url1
-save_path2<fyd>download_url2
+if __name__ == '__main__':
+    with Downloader() as d:
+        r1 = d.submit(Resources(
+            uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
+            save_path="DeepSeek-R1-AWQ/model-00074-of-00074.safetensors"
+        ))
+        r2 = d.submit(Resources(
+            uri='ftp://yunhai:admin123@192.168.6.99/data/spider_temp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip',
+            save_path='0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip'
+        ))
+        r3 = d.submit(Resources(
+            uri='sftp://root:20020308@192.168.6.99/root/quick_start.sh',
+            save_path='quick_start.sh'
+        ))
+        r4 = d.submit(Resources(
+            uri='https://c1.7bbffvip.com/video/xiantaiyoushu/%E7%AC%AC01%E9%9B%86/index.m3u8',
+            save_path='./video/download.mp4',
+            metadata={'test': 'test'}
+        ))
+    print(r1.result(), r2.result(), r3.result(), r4.result())
 ```
 
 # Update log
 
+- V 0.6.0-beta.1
+    - This is the pre-beta version of version 0.6.0, this time we brought some new features, and removed some of the
+      logic and features that were useless and redundant in the previous version, in this version we removed the
+      dependency on Niquests, because it didn't conform to the coding specifications and habits of Python, so there was
+      a strange way of writing 'async with await client.get(url)', so we still used version 0.4.0 httpx as our network
+      request module
+- V 0.5.3
+    - Fixed some bugs
+- V 0.5.2
+    - Fixed some bugs
+- V 0.5.1
+    - Fixed some bugs
 - V 0.5.0
-  - We thought that a faster underlying framework would make downloads faster, so we removed the original request module (httpx) and used a new download module (niquests).
-  - And optimized the UI of the terminal tool
+    - We thought that a faster underlying framework would make downloads faster, so we removed the original request
+      module (httpx) and used a new download module (niquests).
+    - And optimized the UI of the terminal tool
 - V 0.4.11
-  - Optimized type prompts and load command support
+    - Optimized type prompts and load command support
 - V 0.4.2
     - Fix retry progress
 - V 0.4.1

@@ -22,7 +22,6 @@ class Resources:
                  ftp_timeout: int = 30,
                  ftp_port: int = 21,
                  sftp_port: int = 22,
-                 sftp_timeout: int = 22,
                  metadata: dict = None,
                  retry: int = 3,
                  retry_delay: int | tuple[int, int] = 10,
@@ -46,7 +45,6 @@ class Resources:
         :param ftp_timeout: FTP request timeout period
         :param ftp_port: FTP protocol request port
         :param sftp_port: SFTP request port
-        :param sftp_timeout: SFTP request timeout period
         :param metadata: Custom metadata (for adapting custom protocols)
         :param retry: Number of retries
         :param retry_delay: Retry interval
@@ -77,7 +75,6 @@ class Resources:
         self.ftp_port = ftp_port
 
         self.sftp_port = sftp_port
-        self.sftp_timeout = sftp_timeout
 
         self.metadata = metadata
 

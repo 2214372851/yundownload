@@ -42,7 +42,7 @@ class SFTPProtocolHandler(BaseProtocolHandler):
         password = parsed.password or ""
         remote_path = unquote(parsed.path)
 
-        self._connect(host, port, resources.sftp_timeout)
+        self._connect(host, port)
         self._login(username, password)
 
         logger.info(f"Login success to {uri}")
@@ -80,7 +80,7 @@ class SFTPProtocolHandler(BaseProtocolHandler):
         if self.transport:
             self.transport.close()
 
-    def _connect(self, host: str, port: int, timeout: int):
+    def _connect(self, host: str, port: int):
         """建立 SFTP 连接"""
         try:
             self.transport = paramiko.Transport((host, port))
