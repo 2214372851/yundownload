@@ -6,7 +6,7 @@ def cli():
         description="Yun Download"
     )
     parser.add_argument('uri', help="资源链接")
-    parser.add_argument('save_path', type=argparse.FileType, help="保存路径")
+    parser.add_argument('save_path', help="保存路径")
     args = parser.parse_args()
     with Downloader() as dl:
         resources = Resources(
