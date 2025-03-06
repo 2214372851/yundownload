@@ -67,7 +67,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
         try:
             test_response = self.client.head(resources.uri)
             test_response.raise_for_status()
-            content_length = int(test_response.headers.get('Content-Length'))
+            content_length = int(test_response.headers.get('Content-Length', 0))
         except httpx.HTTPStatusError:
             with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
                 content_length = int(test_response.headers.get('Content-Length'))
