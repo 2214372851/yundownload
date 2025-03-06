@@ -13,4 +13,9 @@ def cli():
             uri=args.uri,
             save_path=args.save_path
         )
-        dl.submit(resources)
+        result = dl.submit(resources).result()
+        if result.is_failure():
+            print(f'file download failed: {args.uri}')
+        else:
+            print(f'file download success: {args.uri}')
+
