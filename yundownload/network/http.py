@@ -150,13 +150,12 @@ class HttpProtocolHandler(BaseProtocolHandler):
                 elif chunk_file_size > DEFAULT_SLICED_CHUNK_SIZE:
                     logger.info(f'slice size is larger than the slice size: {resources.uri} to {save_path}')
                     save_path.unlink()
-                elif chunk_file_size == end - start:
+                elif chunk_file_size == end - start + 1:
                     logger.info(f'slice exist skip download: {resources.uri} to {save_path}')
                     return True
                 else:
                     logger.info(f'slice breakpoint resumption: {resources.uri} to {save_path}')
                     headers['Range'] = f'bytes={start + chunk_file_size}-{end}'
-
             async with self.aclient.stream(self._method,
                                            resources.uri,
                                            headers=headers,
