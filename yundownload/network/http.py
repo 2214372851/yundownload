@@ -79,7 +79,9 @@ class HttpProtocolHandler(BaseProtocolHandler):
             elif resources.save_path.stat().st_size > content_length:
                 resources.save_path.unlink()
         resources.save_path.parent.mkdir(parents=True, exist_ok=True)
-        if self._breakpoint_resumption(test_response) and content_length > self._slice_threshold:
+        breakpoint_flag = self._breakpoint_resumption(test_response)
+        resources.metadata['_breakpoint_flag'] = breakpoint_flag
+        if breakpoint_flag and content_length > self._slice_threshold:
             logger.info(f'sliced download: {resources.uri} to {resources.save_path}')
             return asyncio.run(self._sliced_download(resources, content_length))
         else:
@@ -102,7 +104,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
                                 resources.uri,
                                 headers=headers,
                                 data=resources.http_data) as response:
-            if self._breakpoint_resumption(response):
+            if resources.metadata.get('_breakpoint_flag', False):
                 file_mode = 'ab'
             else:
                 file_mode = 'wb'
