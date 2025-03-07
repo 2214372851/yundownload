@@ -67,7 +67,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
         try:
             test_response = self.client.head(resources.uri)
             test_response.raise_for_status()
-            content_length = int(test_response.headers.get('Content-Length'))
+            content_length = int(test_response.headers.get('Content-Length', 0))
         except httpx.HTTPStatusError:
             with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
                 content_length = int(test_response.headers.get('Content-Length'))
@@ -79,7 +79,9 @@ class HttpProtocolHandler(BaseProtocolHandler):
             elif resources.save_path.stat().st_size > content_length:
                 resources.save_path.unlink()
         resources.save_path.parent.mkdir(parents=True, exist_ok=True)
-        if self._breakpoint_resumption(test_response) and content_length > self._slice_threshold:
+        breakpoint_flag = self._breakpoint_resumption(test_response)
+        resources.metadata['_breakpoint_flag'] = breakpoint_flag
+        if breakpoint_flag and content_length > self._slice_threshold:
             logger.info(f'sliced download: {resources.uri} to {resources.save_path}')
             return asyncio.run(self._sliced_download(resources, content_length))
         else:
@@ -102,7 +104,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
                                 resources.uri,
                                 headers=headers,
                                 data=resources.http_data) as response:
-            if self._breakpoint_resumption(response):
+            if resources.metadata.get('_breakpoint_flag', False):
                 file_mode = 'ab'
             else:
                 file_mode = 'wb'
@@ -150,13 +152,12 @@ class HttpProtocolHandler(BaseProtocolHandler):
                 elif chunk_file_size > DEFAULT_SLICED_CHUNK_SIZE:
                     logger.info(f'slice size is larger than the slice size: {resources.uri} to {save_path}')
                     save_path.unlink()
-                elif chunk_file_size == end - start:
+                elif chunk_file_size == end - start + 1:
                     logger.info(f'slice exist skip download: {resources.uri} to {save_path}')
                     return True
                 else:
                     logger.info(f'slice breakpoint resumption: {resources.uri} to {save_path}')
                     headers['Range'] = f'bytes={start + chunk_file_size}-{end}'
-
             async with self.aclient.stream(self._method,
                                            resources.uri,
                                            headers=headers,

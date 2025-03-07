@@ -76,7 +76,7 @@ class Resources:
 
         self.sftp_port = sftp_port
 
-        self.metadata = metadata
+        self.metadata = metadata if metadata else {}
 
     def lock(self):
         """
