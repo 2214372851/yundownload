@@ -142,7 +142,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
     async def _sliced_chunked_download(self, resources: 'Resources', save_path: Path, start: int, end: int,
                                        sem: 'DynamicSemaphore') -> bool:
         async with sem:
-            logger.info(f'start sliced download: {resources.uri} to {resources.save_path}')
+            logger.info(f'start sliced download: {resources.uri} to {resources.save_path} {start}-{end}')
             headers = {'Range': f'bytes={start}-{end}'}
             if save_path.exists():
                 chunk_file_size = save_path.stat().st_size
@@ -156,13 +156,18 @@ class HttpProtocolHandler(BaseProtocolHandler):
                     logger.info(f'slice exist skip download: {resources.uri} to {save_path}')
                     return True
                 else:
+                    file_start = start + chunk_file_size
                     logger.info(f'slice breakpoint resumption: {resources.uri} to {save_path}')
-                    headers['Range'] = f'bytes={start + chunk_file_size}-{end}'
+                    headers['Range'] = f'bytes={file_start}-{end}'
+                    if file_start == end:
+                        logger.info(f'slice exist skip download: {resources.uri} to {save_path}')
+                        return True
             async with self.aclient.stream(self._method,
                                            resources.uri,
                                            headers=headers,
                                            data=resources.http_data) as response:
                 response: httpx.Response
+                print(headers, response.headers)
                 if not response.is_success: sem.record_result(success=False)
                 response.raise_for_status()
                 async with aiofiles.open(save_path, 'ab') as f:
