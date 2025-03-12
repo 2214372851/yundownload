@@ -167,7 +167,6 @@ class HttpProtocolHandler(BaseProtocolHandler):
                                            headers=headers,
                                            data=resources.http_data) as response:
                 response: httpx.Response
-                print(headers, response.headers)
                 if not response.is_success: sem.record_result(success=False)
                 response.raise_for_status()
                 async with aiofiles.open(save_path, 'ab') as f:
