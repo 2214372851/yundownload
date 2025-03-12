@@ -43,7 +43,7 @@ def retry(
                     if i == retry_count - 1:
                         logger.error(f"Retry {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                         raise e
-                    logger.warning(f"Retry {i + 1}/{retry_count} times, error: {e}")
+                    logger.warning(f"Retry {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                     if isinstance(retry_delay, tuple):
                         time.sleep(randint(*retry_delay))
                     else:
@@ -71,7 +71,7 @@ def retry_async(retry_count: int = 1, retry_delay: Union[int, tuple[float, float
                     if i == retry_count - 1:
                         logger.error(f"Retry Async {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                         raise e
-                    logger.warning(f"Retry Async {i + 1}/{retry_count} times, error: {e}")
+                    logger.warning(f"Retry Async {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                     if isinstance(retry_delay, tuple):
                         await asyncio.sleep(randint(*retry_delay))
                     else:
