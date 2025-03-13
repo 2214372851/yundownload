@@ -6,7 +6,7 @@ import aiofiles
 import httpx
 
 from yundownload.network.base import BaseProtocolHandler
-from yundownload.utils.config import DEFAULT_HEADERS, DEFAULT_TIMEOUT, DEFAULT_CHUNK_SIZE, DEFAULT_SLICED_CHUNK_SIZE
+from yundownload.utils.config import DEFAULT_HEADERS, DEFAULT_CHUNK_SIZE, DEFAULT_SLICED_CHUNK_SIZE
 from yundownload.utils.core import Result
 from yundownload.utils.logger import logger
 from yundownload.utils.tools import convert_slice_path
@@ -21,8 +21,8 @@ class HttpProtocolHandler(BaseProtocolHandler):
 
     def __init__(self):
         super().__init__()
-        self.client: None|httpx.Client = None
-        self.aclient: None|httpx.AsyncClient = None
+        self.client: None | httpx.Client = None
+        self.aclient: None | httpx.AsyncClient = None
         self._method = 'GET'
         self._slice_threshold = None
 
@@ -68,6 +68,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
             test_response = self.client.head(resources.uri)
             test_response.raise_for_status()
             content_length = int(test_response.headers.get('Content-Length', 0))
+            self._total_size = content_length
         except httpx.HTTPStatusError:
             with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
                 content_length = int(test_response.headers.get('Content-Length'))
@@ -106,6 +107,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
                                 data=resources.http_data) as response:
             if resources.metadata.get('_breakpoint_flag', False):
                 file_mode = 'ab'
+                self.current_size += resources.save_path.stat().st_size
             else:
                 file_mode = 'wb'
             with resources.save_path.open(file_mode) as f:
@@ -167,10 +169,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
                                            headers=headers,
                                            data=resources.http_data) as response:
                 response: httpx.Response
-                print(headers, response.headers)
                 if not response.is_success: sem.record_result(success=False)
                 response.raise_for_status()
                 async with aiofiles.open(save_path, 'ab') as f:
+                    self.current_size += save_path.stat().st_size
                     async for chunk in response.aiter_bytes(chunk_size=DEFAULT_CHUNK_SIZE):
                         await f.write(chunk)
                         self.current_size += len(chunk)

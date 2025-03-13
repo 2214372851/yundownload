@@ -2,6 +2,7 @@ import asyncio
 import time
 from string import Template
 from pathlib import Path
+from threading import Thread, Event
 from typing import Callable, Union, TypeVar
 from yundownload.utils.logger import logger
 from random import randint
@@ -43,7 +44,7 @@ def retry(
                     if i == retry_count - 1:
                         logger.error(f"Retry {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                         raise e
-                    logger.warning(f"Retry {i + 1}/{retry_count} times, error: {e}")
+                    logger.warning(f"Retry {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                     if isinstance(retry_delay, tuple):
                         time.sleep(randint(*retry_delay))
                     else:
@@ -71,7 +72,7 @@ def retry_async(retry_count: int = 1, retry_delay: Union[int, tuple[float, float
                     if i == retry_count - 1:
                         logger.error(f"Retry Async {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                         raise e
-                    logger.warning(f"Retry Async {i + 1}/{retry_count} times, error: {e}")
+                    logger.warning(f"Retry Async {i + 1}/{retry_count} times, error: {e}", exc_info=True)
                     if isinstance(retry_delay, tuple):
                         await asyncio.sleep(randint(*retry_delay))
                     else:
@@ -80,3 +81,30 @@ def retry_async(retry_count: int = 1, retry_delay: Union[int, tuple[float, float
         return wrapper
 
     return decorator
+
+
+class Interval(Thread):
+    """Call a function after a specified number of seconds:
+
+            t = Timer(30.0, f, args=None, kwargs=None)
+            t.start()
+            t.cancel()     # stop the timer's action if it's still waiting
+
+    """
+
+    def __init__(self, interval, function, args=None, kwargs=None):
+        Thread.__init__(self)
+        self.interval = interval
+        self.function = function
+        self.args = args if args is not None else []
+        self.kwargs = kwargs if kwargs is not None else {}
+        self.finished = Event()
+
+    def cancel(self):
+        """Stop the timer if it hasn't finished yet."""
+        self.finished.set()
+
+    def run(self):
+        while not self.finished.is_set():
+            self.finished.wait(self.interval)
+            self.function(*self.args, **self.kwargs)

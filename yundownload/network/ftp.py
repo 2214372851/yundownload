@@ -46,10 +46,12 @@ class FTPProtocolHandler(BaseProtocolHandler):
         file_size = self._get_remote_size(remote_path)
 
         prepare = self._prepare_local_file(local_path, file_size)
+        self._total_size = file_size
         if prepare & Result.EXIST:
             return Result.EXIST
 
         with open(local_path, "ab" if self.support_rest else "wb") as f:
+            self.current_size += local_path.stat().st_size
             start_pos = f.tell()
 
             if self.support_rest and start_pos > 0:
@@ -57,9 +59,10 @@ class FTPProtocolHandler(BaseProtocolHandler):
                 self.ftp.voidcmd(f"REST {start_pos}")
 
             def write_chunk(data: bytes):
-                f.write(data)
+                f.write(data) # noqa
                 self.current_size += len(data)
 
+            logger.info(f"FTP download started from {uri}")
             resp = self.ftp.retrbinary(f"RETR {remote_path}", write_chunk, rest=start_pos)
 
             if not resp.startswith("226"):

@@ -1,6 +1,8 @@
 import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+
+from utils.tools import Interval
 from yundownload.utils import Result
 from yundownload.utils.logger import logger
 
@@ -18,6 +20,11 @@ class BaseProtocolHandler(ABC):
         self._total_size = 0
         self._total = 0
         self._steps = 0
+        self.resources = None
+        self.timer = Interval(5, self._print)
+
+    def _print(self):
+        logger.resource_p2s(self.resources, self.progress, self.speed)
 
     @property
     def progress(self) -> float:
@@ -65,6 +72,8 @@ class BaseProtocolHandler(ABC):
         """
         logger.resource_start(resources)
         try:
+            self.timer.start()
+            self.resources = resources
             result = self.download(resources)
             if result.is_success():
                 logger.resource_result(resources, result)
@@ -73,6 +82,9 @@ class BaseProtocolHandler(ABC):
         except Exception as e:
             result = Result.FAILURE
             logger.resource_error(resources, e)
+        finally:
+            self.timer.cancel()
+            self._print()
         return result
 
     @abstractmethod
