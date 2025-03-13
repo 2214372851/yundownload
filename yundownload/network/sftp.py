@@ -83,7 +83,7 @@ class SFTPProtocolHandler(BaseProtocolHandler):
     def _connect(self, host: str, port: int):
         """建立 SFTP 连接"""
         try:
-            self.transport = paramiko.Transport((host, port))
+            self.transport = paramiko.Transport((host, port)) # noqa
             self.transport.connect()
         except (SSHException, TimeoutError) as e:
             raise ConnectionException(f"SFTP connection failed: {e}")

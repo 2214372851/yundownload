@@ -42,5 +42,10 @@ class Logger(logging.Logger):
     def resource_log(self, resources: 'Resources', message: str, lever: int | str = logging.INFO):
         self.log(lever, f'❓Downloading message: {message} metadata: {resources.uri} to {resources.save_path}')
 
+    def resource_p2s(self, resources: 'Resources', progress: float, speed: float):
+        self.info(
+            f'📊Downloading progress: {progress} speed: {round(speed / 1024 / 1024, 2)} MB/S '
+            f'metadata: {resources.uri} to {resources.save_path}')
+
 
 logger = Logger()
