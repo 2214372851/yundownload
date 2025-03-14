@@ -2,7 +2,7 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from utils.tools import Interval
+from yundownload.utils.tools import Interval
 from yundownload.utils import Result
 from yundownload.utils.logger import logger
 
