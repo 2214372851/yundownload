@@ -28,7 +28,7 @@ class SFTPProtocolHandler(BaseProtocolHandler):
         return uri.lower().startswith("sftp://")
 
     def download(self, resources: "Resources"):
-        return retry(retry_count=resources.retry, retry_delay=resources.retry_delay)(self._download)(resources)
+        return self._download(resources)
 
     def _download(self, resources: "Resources"):
         """实现 SFTP 断点续传下载"""

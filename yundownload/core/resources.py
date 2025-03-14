@@ -18,6 +18,7 @@ class Resources:
                  http_cookies: dict = None,
                  http_timeout: int = 30,
                  http_auth: tuple[str, str] = None,
+                 http_verify: bool = False,
                  http_slice_threshold: int = 2048 * 1024 * 1024,
                  ftp_timeout: int = 30,
                  ftp_port: int = 21,
@@ -69,6 +70,7 @@ class Resources:
         self.http_cookies = http_cookies
         self.http_timeout = http_timeout
         self.http_auth = http_auth
+        self.http_verify = http_verify
         self.http_slice_threshold = http_slice_threshold
 
         self.ftp_timeout = ftp_timeout

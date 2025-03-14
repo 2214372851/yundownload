@@ -1,11 +1,9 @@
 from ftplib import FTP, error_perm, error_reply
 from pathlib import Path
-from typing import Optional
 from urllib.parse import urlparse, unquote
 
 from yundownload.core.resources import Resources
 from yundownload.network.base import BaseProtocolHandler
-from yundownload.utils import retry
 from yundownload.utils.core import Result
 from yundownload.utils.exceptions import ConnectionException, AuthException
 from yundownload.utils.logger import logger
@@ -24,7 +22,7 @@ class FTPProtocolHandler(BaseProtocolHandler):
         return uri.lower().startswith("ftp://")
 
     def download(self, resources: "Resources"):
-        return retry(retry_count=resources.retry, retry_delay=resources.retry_delay)(self._download)(resources)
+        return self._download(resources)
 
     def _download(self, resources: "Resources"):
         """实现断点续传的流式下载"""

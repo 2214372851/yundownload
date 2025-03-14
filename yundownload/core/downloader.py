@@ -1,6 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor, Future
 from typing import TYPE_CHECKING, Type
 
+from yundownload.utils.tools import retry
 from yundownload.network.base import BaseProtocolHandler
 from yundownload.network.ftp import FTPProtocolHandler
 from yundownload.network.http import HttpProtocolHandler
@@ -22,7 +23,7 @@ def _run(protocols: Type['BaseProtocolHandler'], resources: 'Resources') -> 'Res
     :param resources: Resource Object
     :return: Result
     """
-    return protocols()(resources)
+    return retry(retry_count=resources.retry, retry_delay=resources.retry_delay)(protocols)(resources)
 
 
 class DownloadProcessPoolExecutor(ProcessPoolExecutor):
