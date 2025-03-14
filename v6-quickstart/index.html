@@ -464,6 +464,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#verifyhttp-m3u8" class="md-nav__link">
+    <span class="md-ellipsis">
+      请求 verify（HTTP 与 M3U8 可用）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#http-m3u8_4" class="md-nav__link">
     <span class="md-ellipsis">
       请求超时（HTTP 与 M3U8 可用）
@@ -765,6 +774,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#verifyhttp-m3u8" class="md-nav__link">
+    <span class="md-ellipsis">
+      请求 verify（HTTP 与 M3U8 可用）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#http-m3u8_4" class="md-nav__link">
     <span class="md-ellipsis">
       请求超时（HTTP 与 M3U8 可用）
@@ -1010,6 +1028,16 @@ Resources(
     http_cookies={
         &quot;name&quot;: &quot;value&quot;
     }
+)
+</code></pre>
+<h3 id="verifyhttp-m3u8">请求 verify（HTTP 与 M3U8 可用）</h3>
+<p>目前可应用于 <code>http</code> 以及 <code>m3u8</code> 请求中，请求时是否校验证书，默认为 <code>True</code></p>
+<pre><code class="language-python">from yundownload import Resources
+
+Resources(
+    uri=&quot;https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true&quot;,
+    save_path=&quot;model-00074-of-00074.safetensors&quot;,
+    http_verify=False
 )
 </code></pre>
 <h3 id="http-m3u8_4">请求超时（HTTP 与 M3U8 可用）</h3>
