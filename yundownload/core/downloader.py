@@ -23,7 +23,7 @@ def _run(protocols: Type['BaseProtocolHandler'], resources: 'Resources') -> 'Res
     :param resources: Resource Object
     :return: Result
     """
-    return retry(retry_count=resources.retry, retry_delay=resources.retry_delay)(protocols)(resources)
+    return retry(retry_count=resources.retry, retry_delay=resources.retry_delay)(protocols())(resources)
 
 
 class DownloadProcessPoolExecutor(ProcessPoolExecutor):
