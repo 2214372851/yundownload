@@ -10,7 +10,6 @@ from yundownload.utils.config import DEFAULT_HEADERS, DEFAULT_CHUNK_SIZE, DEFAUL
 from yundownload.utils.core import Result
 from yundownload.utils.logger import logger
 from yundownload.utils.tools import convert_slice_path
-from yundownload.utils.tools import retry, retry_async
 
 if TYPE_CHECKING:
     from yundownload.core.resources import Resources
@@ -37,9 +36,9 @@ class HttpProtocolHandler(BaseProtocolHandler):
             headers=DEFAULT_HEADERS,
             follow_redirects=True,
             transport=httpx.HTTPTransport(
-                retries=5,
-                verify=False
-            )
+                retries=5
+            ),
+            verify=resources.http_verify
         )
         self.client.params.merge(resources.http_params)
         self.client.headers.update(resources.http_headers)
@@ -52,9 +51,9 @@ class HttpProtocolHandler(BaseProtocolHandler):
             headers=DEFAULT_HEADERS,
             follow_redirects=True,
             transport=httpx.AsyncHTTPTransport(
-                retries=5,
-                verify=False
-            )
+                retries=5
+            ),
+            verify=resources.http_verify
         )
         return self._match_method(resources)
 
@@ -87,7 +86,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
             return asyncio.run(self._sliced_download(resources, content_length))
         else:
             logger.info(f'stream download: {resources.uri} to {resources.save_path}')
-            return retry(resources.retry, resources.retry_delay)(self._stream_download)(resources, content_length)
+            return self._stream_download(resources, content_length)
 
     def _stream_download(self, resources: 'Resources', content_length: int) -> Result:
         headers = {}
@@ -107,10 +106,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
                                 data=resources.http_data) as response:
             if resources.metadata.get('_breakpoint_flag', False):
                 file_mode = 'ab'
-                self.current_size += resources.save_path.stat().st_size
             else:
                 file_mode = 'wb'
             with resources.save_path.open(file_mode) as f:
+                self.current_size += resources.save_path.stat().st_size
                 for chunk in response.iter_bytes(chunk_size=DEFAULT_CHUNK_SIZE):
                     f.write(chunk)
                     self.current_size += len(chunk)
@@ -127,10 +126,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
             slice_path = path_template(start)
             tasks.append(
                 asyncio.create_task(
-                    retry_async(
-                        resources.retry,
-                        resources.retry_delay
-                    )(self._sliced_chunked_download)(resources, slice_path, start, end, resources.semaphore)
+                    self._sliced_chunked_download(resources, slice_path, start, end, resources.semaphore)
                 )
             )
             chunks_path.append(slice_path)

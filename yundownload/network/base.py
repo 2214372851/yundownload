@@ -63,7 +63,7 @@ class BaseProtocolHandler(ABC):
         """
         pass
 
-    def __call__(self, resources: 'Resources') -> 'Result':
+    def __call__(self, resources: 'Resources') -> 'Result': # noqa
         """
         Invoke the download method
 
@@ -85,6 +85,7 @@ class BaseProtocolHandler(ABC):
         finally:
             self.timer.cancel()
             self._print()
+
         return result
 
     @abstractmethod

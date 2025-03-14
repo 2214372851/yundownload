@@ -141,6 +141,20 @@ Resources(
 )
 ```
 
+### 请求 verify（HTTP 与 M3U8 可用）
+
+目前可应用于 `http` 以及 `m3u8` 请求中，请求时是否校验证书，默认为 `True`
+
+```python
+from yundownload import Resources
+
+Resources(
+    uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
+    save_path="model-00074-of-00074.safetensors",
+    http_verify=False
+)
+```
+
 ### 请求超时（HTTP 与 M3U8 可用）
 
 目前可应用于 `http` 以及 `m3u8` 请求中，请求超时以秒为单位传入

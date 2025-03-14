@@ -1,14 +1,15 @@
 import asyncio
 from pathlib import Path
 from typing import TYPE_CHECKING
-from yundownload.utils.logger import logger
-from yundownload.utils.tools import retry_async
-from yundownload.utils.core import Result
-from yundownload.network.base import BaseProtocolHandler
 from urllib.parse import urlparse, urljoin
-from httpx import AsyncClient, Response, Proxy
+
 import aiofiles
 import m3u8
+from httpx import AsyncClient, Response
+
+from yundownload.network.base import BaseProtocolHandler
+from yundownload.utils.core import Result
+from yundownload.utils.logger import logger
 
 if TYPE_CHECKING:
     from yundownload.core.resources import Resources
@@ -42,7 +43,7 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 headers=resources.http_headers,
                 cookies=resources.http_cookies,
                 mounts=resources.http_proxy,
-                verify=False
+                verify=resources.http_verify
         ) as client:
             final_playlist = await self.handle_variant_playlist(client, resources)
             segments = self.parse_segments(final_playlist)
@@ -55,9 +56,7 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 segment_path = video_path / f"{index}.ts"
                 tasks.append(
                     asyncio.create_task(
-                        retry_async(resources.retry, resources.retry_delay)(
-                            self.download_segment
-                        )(index, seg, segment_path, client, resources.semaphore)
+                        self.download_segment(index, seg, segment_path, client, resources.semaphore)
                     )
                 )
                 segment_paths.append(segment_path)
