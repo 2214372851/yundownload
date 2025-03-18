@@ -70,6 +70,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
             self._total_size = content_length
         except httpx.HTTPStatusError:
             with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
+                test_response.raise_for_status()
                 content_length = int(test_response.headers.get('Content-Length'))
             test_response = self.client.request(self._method, resources.uri, headers={'Range': 'bytes=0-1'},
                                                 data=resources.http_data)
@@ -104,6 +105,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
                                 resources.uri,
                                 headers=headers,
                                 data=resources.http_data) as response:
+            response.raise_for_status()
             if resources.metadata.get('_breakpoint_flag', False):
                 file_mode = 'ab'
             else:
