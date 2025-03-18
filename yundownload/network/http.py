@@ -104,6 +104,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
                                 resources.uri,
                                 headers=headers,
                                 data=resources.http_data) as response:
+            response.raise_for_status()
             if resources.metadata.get('_breakpoint_flag', False):
                 file_mode = 'ab'
             else:
