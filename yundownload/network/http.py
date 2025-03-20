@@ -6,7 +6,7 @@ import aiofiles
 import httpx
 
 from yundownload.network.base import BaseProtocolHandler
-from yundownload.utils.config import DEFAULT_HEADERS, DEFAULT_CHUNK_SIZE, DEFAULT_SLICED_CHUNK_SIZE
+from yundownload.utils.config import DEFAULT_HEADERS, DEFAULT_CHUNK_SIZE
 from yundownload.utils.core import Result
 from yundownload.utils.logger import logger
 from yundownload.utils.tools import convert_slice_path
@@ -24,11 +24,12 @@ class HttpProtocolHandler(BaseProtocolHandler):
         self.aclient: None | httpx.AsyncClient = None
         self._method = 'GET'
         self._slice_threshold = None
+        self.sliced_chunk_size = None
 
     def download(self, resources: 'Resources'):
         self._slice_threshold = resources.http_slice_threshold
         self._method = resources.http_method
-
+        self.sliced_chunk_size = resources.http_sliced_chunk_size
         self.client = httpx.Client(
             timeout=resources.http_timeout,
             auth=resources.http_auth,
@@ -121,8 +122,8 @@ class HttpProtocolHandler(BaseProtocolHandler):
         path_template = convert_slice_path(resources.save_path)
         chunks_path = []
         tasks = []
-        for start in range(0, content_length, DEFAULT_SLICED_CHUNK_SIZE):
-            end = start + DEFAULT_SLICED_CHUNK_SIZE - 1
+        for start in range(0, content_length, self.sliced_chunk_size):
+            end = start + self.sliced_chunk_size - 1
             if end > content_length:
                 end = content_length
             slice_path = path_template(start)
@@ -146,10 +147,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
             headers = {'Range': f'bytes={start}-{end}'}
             if save_path.exists():
                 chunk_file_size = save_path.stat().st_size
-                if chunk_file_size == DEFAULT_SLICED_CHUNK_SIZE:
+                if chunk_file_size == self.sliced_chunk_size:
                     logger.info(f'slice exist skip download: {resources.uri} to {save_path}')
                     return True
-                elif chunk_file_size > DEFAULT_SLICED_CHUNK_SIZE:
+                elif chunk_file_size > self.sliced_chunk_size:
                     logger.info(f'slice size is larger than the slice size: {resources.uri} to {save_path}')
                     save_path.unlink()
                 elif chunk_file_size == end - start + 1:
