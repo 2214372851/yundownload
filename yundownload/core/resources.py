@@ -20,6 +20,7 @@ class Resources:
                  http_auth: tuple[str, str] = None,
                  http_verify: bool = False,
                  http_slice_threshold: int = 2048 * 1024 * 1024,
+                 http_sliced_chunk_size: int = 2048 * 1024 * 1024,
                  ftp_timeout: int = 30,
                  ftp_port: int = 21,
                  sftp_port: int = 22,
@@ -43,6 +44,7 @@ class Resources:
         :param http_timeout: HTTP request timeout period (Valid for M3U8 protocol)
         :param http_auth: HTTP protocol authentication is requested (Valid for M3U8 protocol)
         :param http_slice_threshold: HTTP protocol sharding threshold
+        :param http_sliced_chunk_size: HTTP protocol sharding chunk size
         :param ftp_timeout: FTP request timeout period
         :param ftp_port: FTP protocol request port
         :param sftp_port: SFTP request port
@@ -72,6 +74,7 @@ class Resources:
         self.http_auth = http_auth
         self.http_verify = http_verify
         self.http_slice_threshold = http_slice_threshold
+        self.http_sliced_chunk_size = http_sliced_chunk_size
 
         self.ftp_timeout = ftp_timeout
         self.ftp_port = ftp_port
