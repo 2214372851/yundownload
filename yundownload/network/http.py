@@ -33,7 +33,14 @@ class HttpProtocolHandler(BaseProtocolHandler):
         self.client = httpx.Client(
             timeout=resources.http_timeout,
             auth=resources.http_auth,
-            mounts=resources.http_proxy,
+            mounts={
+                'http://': httpx.HTTPTransport(
+                    proxy=resources.http_proxy.get('http'),
+                ),
+                'https://': httpx.HTTPTransport(
+                    proxy=resources.http_proxy.get('https'),
+                )
+            },
             headers=DEFAULT_HEADERS,
             follow_redirects=True,
             transport=httpx.HTTPTransport(
@@ -48,7 +55,14 @@ class HttpProtocolHandler(BaseProtocolHandler):
         self.aclient = httpx.AsyncClient(
             timeout=resources.http_timeout,
             auth=resources.http_auth,
-            mounts=resources.http_proxy,
+            mounts={
+                'http://': httpx.AsyncHTTPTransport(
+                    proxy=resources.http_proxy.get('http'),
+                ),
+                'https://': httpx.AsyncHTTPTransport(
+                    proxy=resources.http_proxy.get('https'),
+                )
+            },
             headers=DEFAULT_HEADERS,
             follow_redirects=True,
             transport=httpx.AsyncHTTPTransport(
@@ -75,6 +89,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
                 content_length = int(test_response.headers.get('Content-Length'))
             test_response = self.client.request(self._method, resources.uri, headers={'Range': 'bytes=0-1'},
                                                 data=resources.http_data)
+        except Exception as e:
+            logger.error(e)
+            return Result.FAILURE
+
         if resources.save_path.exists():
             if resources.save_path.stat().st_size == content_length:
                 return Result.EXIST
@@ -149,12 +167,14 @@ class HttpProtocolHandler(BaseProtocolHandler):
                 chunk_file_size = save_path.stat().st_size
                 if chunk_file_size == self.sliced_chunk_size:
                     logger.info(f'slice exist skip download: {resources.uri} to {save_path}')
+                    self.current_size += save_path.stat().st_size
                     return True
                 elif chunk_file_size > self.sliced_chunk_size:
                     logger.info(f'slice size is larger than the slice size: {resources.uri} to {save_path}')
                     save_path.unlink()
                 elif chunk_file_size == end - start + 1:
                     logger.info(f'slice exist skip download: {resources.uri} to {save_path}')
+                    self.current_size += save_path.stat().st_size
                     return True
                 else:
                     file_start = start + chunk_file_size
@@ -162,6 +182,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
                     headers['Range'] = f'bytes={file_start}-{end}'
                     if file_start == end:
                         logger.info(f'slice exist skip download: {resources.uri} to {save_path}')
+                        self.current_size += save_path.stat().st_size
                         return True
             async with self.aclient.stream(self._method,
                                            resources.uri,

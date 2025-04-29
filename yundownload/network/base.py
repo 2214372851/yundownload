@@ -1,6 +1,8 @@
+import os
 import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+from yundownload.utils.core import Environment
 
 from yundownload.utils.tools import Interval
 from yundownload.utils import Result
@@ -11,6 +13,7 @@ if TYPE_CHECKING:
 
 
 class BaseProtocolHandler(ABC):
+
     def __init__(self):
         """
         Protocol processor base class
@@ -21,7 +24,7 @@ class BaseProtocolHandler(ABC):
         self._total = 0
         self._steps = 0
         self.resources = None
-        self.timer = Interval(5, self._print)
+        self.timer = Interval(int(os.getenv(Environment.LOG_EVERY, 5)), self._print)
 
     def _print(self):
         logger.resource_p2s(self.resources, self.progress, self.speed)
@@ -63,7 +66,7 @@ class BaseProtocolHandler(ABC):
         """
         pass
 
-    def __call__(self, resources: 'Resources') -> 'Result': # noqa
+    def __call__(self, resources: 'Resources') -> 'Result':  # noqa
         """
         Invoke the download method
 

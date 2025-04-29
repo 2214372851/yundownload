@@ -1,3 +1,4 @@
+
 from yundownload import Downloader, Resources
 
 
@@ -33,5 +34,17 @@ def test_m3u8():
         result = d.submit(Resources(
             uri='https://c1.7bbffvip.com/video/xiantaiyoushu/%E7%AC%AC01%E9%9B%86/index.m3u8',
             save_path=r'C:\Users\YUNHAI\Downloads\download-test/test_files/m3u8/video/download.mp4'
+        ))
+        assert result.result().is_success()
+
+def test_proxy():
+    with Downloader() as d:
+        result = d.submit(Resources(
+            uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
+            save_path=r"C:\Users\YUNHAI\Downloads\download-test/test_files/http/DeepSeek-R1-AWQ/model-00074-of-00074.safetensors",
+            http_proxy={
+                'http': 'http://127.0.0.1:7890',
+                'https': 'http://127.0.0.1:7890'
+            }
         ))
         assert result.result().is_success()
