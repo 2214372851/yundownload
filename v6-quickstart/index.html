@@ -410,6 +410,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      环境变量
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#http-m3u8" class="md-nav__link">
     <span class="md-ellipsis">
       请求方式（HTTP 与 M3U8 可用）
@@ -428,7 +437,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       请求数据
     </span>
@@ -527,7 +536,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#_7" class="md-nav__link">
     <span class="md-ellipsis">
       拓展元数据（拓展）
     </span>
@@ -536,7 +545,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#_8" class="md-nav__link">
     <span class="md-ellipsis">
       重试次数（全局可用）
     </span>
@@ -545,7 +554,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#_9" class="md-nav__link">
     <span class="md-ellipsis">
       重试间隔（全局可用）
     </span>
@@ -568,7 +577,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#_10" class="md-nav__link">
     <span class="md-ellipsis">
       日志
     </span>
@@ -577,7 +586,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       拓展
     </span>
@@ -586,7 +595,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       锁定协议
     </span>
@@ -720,6 +729,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      环境变量
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#http-m3u8" class="md-nav__link">
     <span class="md-ellipsis">
       请求方式（HTTP 与 M3U8 可用）
@@ -738,7 +756,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       请求数据
     </span>
@@ -837,7 +855,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#_7" class="md-nav__link">
     <span class="md-ellipsis">
       拓展元数据（拓展）
     </span>
@@ -846,7 +864,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#_8" class="md-nav__link">
     <span class="md-ellipsis">
       重试次数（全局可用）
     </span>
@@ -855,7 +873,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#_9" class="md-nav__link">
     <span class="md-ellipsis">
       重试间隔（全局可用）
     </span>
@@ -878,7 +896,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#_10" class="md-nav__link">
     <span class="md-ellipsis">
       日志
     </span>
@@ -887,7 +905,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       拓展
     </span>
@@ -896,7 +914,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       锁定协议
     </span>
@@ -959,6 +977,16 @@ if __name__ == '__main__':
 </code></pre>
 <p>如你所见，该版本可以支持 <code>http</code>、<code>sftp</code>、<code>ftp</code> 以及 <code>m3u8</code> 视频的下载</p>
 <h2 id="_4">资源参数</h2>
+<h3 id="_5">环境变量</h3>
+<p>在下载资源时，您可以通过环境变量来设置下载器的相关参数，以下是支持的环境变量：</p>
+<ul>
+<li><code>YUNDOWNLOAD_LOG_EVERY</code>: 设置统计日志的输出间隔时间，默认为 <code>10</code></li>
+<li><code>YUNDOWNLOAD_DEFAULT_CHUNK_SIZE</code>: 设置下载器的默认分块大小，默认为 <code>1024 * 1024</code></li>
+<li><code>YUNDOWNLOAD_DEFAULT_SLICED_CHUNK_SIZE</code>: 设置下载器的默认分块大小，默认为 <code>1024 * 1024 * 100</code></li>
+<li><code>YUNDOWNLOAD_DEFAULT_TIMEOUT</code>: 设置下载器的默认超时时间，默认为 <code>60</code></li>
+<li><code>YUNDOWNLOAD_DEFAULT_MAX_RETRY</code>: 设置下载器的默认重试次数，默认为 <code>3</code></li>
+<li><code>YUNDOWNLOAD_DEFAULT_RETRY_DELAY</code>: 设置下载器的默认重试延迟时间，默认为 <code>3</code></li>
+</ul>
 <h3 id="http-m3u8">请求方式（HTTP 与 M3U8 可用）</h3>
 <p>目前支持的请求方式有 <code>GET</code>、<code>POST</code>、<code>PUT</code>、<code>DELETE</code>，默认为 <code>GET</code> 请求。</p>
 <pre><code class="language-python">from yundownload import Resources
@@ -981,7 +1009,7 @@ Resources(
     }
 )
 </code></pre>
-<h3 id="_5">请求数据</h3>
+<h3 id="_6">请求数据</h3>
 <p>请求数据以字典的形式传入</p>
 <pre><code class="language-python">from yundownload import Resources
 
@@ -1100,7 +1128,7 @@ Resources(
     sftp_port=21
 )
 </code></pre>
-<h3 id="_6">拓展元数据（拓展）</h3>
+<h3 id="_7">拓展元数据（拓展）</h3>
 <p>拓展元数据以字典的形式传入，可以用于为自定义的下载协议携带自定义的元数据</p>
 <pre><code class="language-python">from yundownload import Resources
 
@@ -1112,7 +1140,7 @@ Resources(
     }
 )
 </code></pre>
-<h3 id="_7">重试次数（全局可用）</h3>
+<h3 id="_8">重试次数（全局可用）</h3>
 <p>重试次数以整数的形式传入</p>
 <pre><code class="language-python">from yundownload import Resources
 
@@ -1122,7 +1150,7 @@ Resources(
     retry=3
 )
 </code></pre>
-<h3 id="_8">重试间隔（全局可用）</h3>
+<h3 id="_9">重试间隔（全局可用）</h3>
 <p>重试次数以整数或元组（start 到 end 随机间隔）的形式传入</p>
 <pre><code class="language-python">from yundownload import Resources
 
@@ -1144,7 +1172,7 @@ Resources(
     window_size=100
 )
 </code></pre>
-<h2 id="_9">日志</h2>
+<h2 id="_10">日志</h2>
 <p>你可以通过引用 <code>yundownload.logger</code> 来获取日志对象，并且内置了一些日志方法，
 你可以通过 <code>logger.resource_start</code>、<code>logger.resource_result</code>、<code>logger.resource_error</code>、<code>logger.resource_exist</code>、
 <code>logger.resource_log</code> 来记录资源下载的日志。</p>
@@ -1162,7 +1190,7 @@ logger.resource_error(resource, ValueError('...'))
 logger.resource_exist(resource)
 logger.resource_log(resource, 'log')
 </code></pre>
-<h2 id="_10">拓展</h2>
+<h2 id="_11">拓展</h2>
 <p>你可以继承 <code>yundownload.network.base.BaseProtocolHandler</code> 来拓展下载协议，
 然后通过 <code>Downloader().add_protocol(MyProtocolHandler)</code> 来注册协议，
 具体实现你可以参考如下示例</p>
@@ -1190,7 +1218,7 @@ class MyProtocolHandler(BaseProtocolHandler):
         &quot;&quot;&quot;
         pass
 </code></pre>
-<h2 id="_11">锁定协议</h2>
+<h2 id="_12">锁定协议</h2>
 <p>你可以通过 <code>lock_protocol</code> 方法来锁定下载协议，这样就不会再去调用资源的check来判断该选择哪一个下载协议</p>
 <pre><code class="language-python">from yundownload import Downloader
 
@@ -1217,7 +1245,7 @@ with Downloader() as d:
     <span class="md-icon" title="最后更新">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">2025年2月25日</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">2025年3月14日</span>
   </span>
 
     
