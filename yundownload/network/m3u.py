@@ -5,7 +5,7 @@ from urllib.parse import urlparse, urljoin
 
 import aiofiles
 import m3u8
-from httpx import AsyncClient, Response
+from httpx import AsyncClient, Response, AsyncHTTPTransport
 
 from yundownload.network.base import BaseProtocolHandler
 from yundownload.utils.core import Result
@@ -42,7 +42,14 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 params=resources.http_params,
                 headers=resources.http_headers,
                 cookies=resources.http_cookies,
-                mounts=resources.http_proxy,
+                mounts={
+                    'http://': AsyncHTTPTransport(
+                        proxy=resources.http_proxy.get('http'),
+                    ),
+                    'https://': AsyncHTTPTransport(
+                        proxy=resources.http_proxy.get('https'),
+                    )
+                },
                 verify=resources.http_verify
         ) as client:
             final_playlist = await self.handle_variant_playlist(client, resources)

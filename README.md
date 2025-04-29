@@ -3,7 +3,6 @@
 ![PyPI - License](https://img.shields.io/pypi/l/yundownload)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/yundownload)
 
-
 # Intro
 
 [Official documentation](https://2214372851.github.io/yundownload/)
@@ -54,6 +53,11 @@ if __name__ == '__main__':
 
 # Update log
 
+- V 0.6.8
+    - Fix proxy usage exceptions
+    - Fixed incomplete statistics
+    - Add default environment variables to control default values such as log output
+    - Added proxy test cases
 - V 0.6.0-beta.1
     - This is the pre-beta version of version 0.6.0, this time we brought some new features, and removed some of the
       logic and features that were useless and redundant in the previous version, in this version we removed the
