@@ -102,7 +102,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
         breakpoint_flag = self._breakpoint_resumption(test_response)
         resources.metadata['_breakpoint_flag'] = breakpoint_flag
         if breakpoint_flag and content_length > self._slice_threshold:
-            logger.info(f'sliced download: {resources.uri} to {resources.save_path}')
+            logger.info(f'sliced download: {content_length} {resources.uri} to {resources.save_path}')
             return asyncio.run(self._sliced_download(resources, content_length))
         else:
             logger.info(f'stream download: {resources.uri} to {resources.save_path}')

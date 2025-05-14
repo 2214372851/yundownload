@@ -51,8 +51,8 @@ if __name__ == '__main__':
 在下载资源时，您可以通过环境变量来设置下载器的相关参数，以下是支持的环境变量：
 
 - `YUNDOWNLOAD_LOG_EVERY`: 设置统计日志的输出间隔时间，默认为 `10`
-- `YUNDOWNLOAD_DEFAULT_CHUNK_SIZE`: 设置下载器的默认分块大小，默认为 `1024 * 1024`
-- `YUNDOWNLOAD_DEFAULT_SLICED_CHUNK_SIZE`: 设置下载器的默认分块大小，默认为 `1024 * 1024 * 100`
+- `YUNDOWNLOAD_DEFAULT_CHUNK_SIZE`: 设置下载器的默认流分块大小，默认为 `1024 * 1024`
+- `YUNDOWNLOAD_DEFAULT_SLICED_CHUNK_SIZE`: 设置下载器分片大小，默认为 `1024 * 1024 * 100`
 - `YUNDOWNLOAD_DEFAULT_TIMEOUT`: 设置下载器的默认超时时间，默认为 `60`
 - `YUNDOWNLOAD_DEFAULT_MAX_RETRY`: 设置下载器的默认重试次数，默认为 `3`
 - `YUNDOWNLOAD_DEFAULT_RETRY_DELAY`: 设置下载器的默认重试延迟时间，默认为 `3`
