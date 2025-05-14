@@ -52,7 +52,8 @@ if __name__ == '__main__':
 `yundownload uri save_path`
 
 # Update log
-
+- V 0.6.9
+    - Fixed dynamic semaphore errors
 - V 0.6.8
     - Fix proxy usage exceptions
     - Fixed incomplete statistics
