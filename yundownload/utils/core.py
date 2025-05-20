@@ -1,7 +1,7 @@
-from enum import IntFlag, StrEnum
+from enum import IntFlag
 
 
-class Environment(StrEnum):
+class Environment:
     LOG_EVERY = 'YUNDOWNLOAD_LOG_EVERY'
     DEFAULT_CHUNK_SIZE = 'YUNDOWNLOAD_DEFAULT_CHUNK_SIZE'
     DEFAULT_SLICED_CHUNK_SIZE = 'YUNDOWNLOAD_DEFAULT_SLICED_CHUNK_SIZE'
