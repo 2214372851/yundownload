@@ -20,6 +20,8 @@ class BaseProtocolHandler(ABC):
         """
         self.start_time = time.time()
         self.current_size = 0
+        self._last_current_size = 0
+        self._last_time = time.time()
         self._total_size = 0
         self._total = 0
         self._steps = 0
@@ -53,7 +55,11 @@ class BaseProtocolHandler(ABC):
         """
         if self.current_size == 0:
             return 0
-        return self.current_size / (time.time() - self.start_time)
+        current_size = self.current_size - self._last_current_size
+        self._last_current_size = self.current_size
+        speed = current_size / (time.time() - self._last_time)
+        self._last_time  = time.time()
+        return speed
 
     @staticmethod
     @abstractmethod
