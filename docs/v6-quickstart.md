@@ -296,7 +296,7 @@ Resources(
 
 ### 自适应异步并发信号（HTTP 与 M3U8 可用）
 
-目前可应用于 `http` 以及 `m3u8` 请求中，`min_concurrency` 默认为 1，`max_concurrency` 默认为 30，`window_size` 自适应并发窗口大小。
+目前可应用于 `http` 以及 `m3u8` 请求中，`min_concurrency` 默认为 2，`max_concurrency` 默认为 30，`window_size` 自适应并发窗口大小。
 
 ```python
 from yundownload import Resources

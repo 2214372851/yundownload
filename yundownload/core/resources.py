@@ -20,14 +20,14 @@ class Resources:
                  http_auth: tuple[str, str] = None,
                  http_verify: bool = False,
                  http_slice_threshold: int = 2048 * 1024 * 1024,
-                 http_sliced_chunk_size: int = 2048 * 1024 * 1024,
+                 http_sliced_chunk_size: int = 1024 * 1024 * 1024,
                  ftp_timeout: int = 30,
                  ftp_port: int = 21,
                  sftp_port: int = 22,
                  metadata: dict = None,
                  retry: int = 3,
                  retry_delay: int | tuple[int, int] = 10,
-                 min_concurrency: int = 1,
+                 min_concurrency: int = 2,
                  max_concurrency: int = 30,
                  window_size: int = 100):
         """
