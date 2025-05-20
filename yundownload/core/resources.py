@@ -20,7 +20,7 @@ class Resources:
                  http_auth: tuple[str, str] = None,
                  http_verify: bool = False,
                  http_slice_threshold: int = 2048 * 1024 * 1024,
-                 http_sliced_chunk_size: int = 1024 * 1024 * 1024,
+                 http_sliced_chunk_size: int = 2048 * 1024 * 1024,
                  ftp_timeout: int = 30,
                  ftp_port: int = 21,
                  sftp_port: int = 22,
