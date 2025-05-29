@@ -603,6 +603,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      结果
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -922,6 +931,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      结果
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1161,7 +1179,7 @@ Resources(
 )
 </code></pre>
 <h3 id="http-m3u8_6">自适应异步并发信号（HTTP 与 M3U8 可用）</h3>
-<p>目前可应用于 <code>http</code> 以及 <code>m3u8</code> 请求中，<code>min_concurrency</code> 默认为 1，<code>max_concurrency</code> 默认为 30，<code>window_size</code> 自适应并发窗口大小。</p>
+<p>目前可应用于 <code>http</code> 以及 <code>m3u8</code> 请求中，<code>min_concurrency</code> 默认为 2，<code>max_concurrency</code> 默认为 30，<code>window_size</code> 自适应并发窗口大小。</p>
 <pre><code class="language-python">from yundownload import Resources
 
 Resources(
@@ -1225,6 +1243,22 @@ class MyProtocolHandler(BaseProtocolHandler):
 with Downloader() as d:
     d.lock_protocol(MyProtocolHandler)
 </code></pre>
+<h2 id="_13">结果</h2>
+<p>你可以通过 <code>submit</code> 的返回来获取下载结果，来确定任务状态。</p>
+<pre><code class="language-python">from yundownload import Downloader, Resources
+
+with Downloader() as d:
+    result = d.submit(Resources(
+        uri='ftp://yunhai:admin123@192.168.6.99/data/spider_temp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip',
+        save_path=r'C:\Users\YUNHAI\Downloads\download-test/test_files/ftp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip'
+    ))
+    result.state.is_success()
+    result.state.is_failure()
+    result.state.is_exist()
+    result.state.is_wait()
+    print(result.resources.save_path)
+    print(result.resources.uri)
+</code></pre>
 
 
 
@@ -1245,7 +1279,7 @@ with Downloader() as d:
     <span class="md-icon" title="最后更新">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">2025年4月29日</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">2025年5月29日</span>
   </span>
 
     
