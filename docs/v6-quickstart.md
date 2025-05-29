@@ -374,3 +374,23 @@ from yundownload import Downloader
 with Downloader() as d:
     d.lock_protocol(MyProtocolHandler)
 ```
+
+## 结果
+
+你可以通过 `submit` 的返回来获取下载结果，来确定任务状态。
+
+```python
+from yundownload import Downloader, Resources
+
+with Downloader() as d:
+    result = d.submit(Resources(
+        uri='ftp://yunhai:admin123@192.168.6.99/data/spider_temp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip',
+        save_path=r'C:\Users\YUNHAI\Downloads\download-test/test_files/ftp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip'
+    ))
+    result.state.is_success()
+    result.state.is_failure()
+    result.state.is_exist()
+    result.state.is_wait()
+    print(result.resources.save_path)
+    print(result.resources.uri)
+```
