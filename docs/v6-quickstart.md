@@ -296,7 +296,7 @@ Resources(
 
 ### 自适应异步并发信号（HTTP 与 M3U8 可用）
 
-目前可应用于 `http` 以及 `m3u8` 请求中，`min_concurrency` 默认为 1，`max_concurrency` 默认为 30，`window_size` 自适应并发窗口大小。
+目前可应用于 `http` 以及 `m3u8` 请求中，`min_concurrency` 默认为 2，`max_concurrency` 默认为 30，`window_size` 自适应并发窗口大小。
 
 ```python
 from yundownload import Resources
@@ -373,4 +373,24 @@ from yundownload import Downloader
 
 with Downloader() as d:
     d.lock_protocol(MyProtocolHandler)
+```
+
+## 结果
+
+你可以通过 `submit` 的返回来获取下载结果，来确定任务状态。
+
+```python
+from yundownload import Downloader, Resources
+
+with Downloader() as d:
+    result = d.submit(Resources(
+        uri='ftp://yunhai:admin123@192.168.6.99/data/spider_temp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip',
+        save_path=r'C:\Users\YUNHAI\Downloads\download-test/test_files/ftp/0f03dc87-57ec-4278-bf95-15d4a1ad90d3.zip'
+    ))
+    result.state.is_success()
+    result.state.is_failure()
+    result.state.is_exist()
+    result.state.is_wait()
+    print(result.resources.save_path)
+    print(result.resources.uri)
 ```

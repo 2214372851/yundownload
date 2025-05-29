@@ -1,7 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor, Future
 from typing import TYPE_CHECKING, Type
 
-from yundownload.utils.tools import retry
+from utils.work import WorkerFuture
 from yundownload.network.base import BaseProtocolHandler
 from yundownload.network.ftp import FTPProtocolHandler
 from yundownload.network.http import HttpProtocolHandler
@@ -10,6 +10,7 @@ from yundownload.network.sftp import SFTPProtocolHandler
 from yundownload.utils.core import Result
 from yundownload.utils.exceptions import NotSupportedProtocolException
 from yundownload.utils.logger import logger
+from yundownload.utils.tools import retry
 
 if TYPE_CHECKING:
     from yundownload.core import Resources
@@ -60,7 +61,7 @@ class Downloader:
         self._lock_protocol = None
         self._download_pool = DownloadProcessPoolExecutor(max_workers=max_workers)
 
-    def submit(self, resources: 'Resources') -> 'Future[Result]':
+    def submit(self, resources: 'Resources') -> 'WorkerFuture':
         """
         提交任务
 
@@ -72,7 +73,11 @@ class Downloader:
         else:
             protocol = self._match_protocol(resources)
         resources.lock()
-        return self._download_pool.run_download(protocol, resources)
+        return WorkerFuture(
+            future=self._download_pool.run_download(protocol, resources),
+            protocol=protocol,
+            resources=resources
+        )
 
     def lock_protocol(self, protocol: BaseProtocolHandler):
         """

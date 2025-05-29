@@ -12,7 +12,7 @@ class DynamicConcurrencyController:
     Dynamic concurrency control classes
     """
 
-    def __init__(self, min_concurrency=1, max_concurrency=30, window_size=100):
+    def __init__(self, min_concurrency=2, max_concurrency=30, window_size=100):
         # 并发控制参数
         self.min_concurrency = min_concurrency
         self.max_concurrency = max_concurrency

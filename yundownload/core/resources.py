@@ -27,7 +27,7 @@ class Resources:
                  metadata: dict = None,
                  retry: int = 3,
                  retry_delay: int | tuple[int, int] = 10,
-                 min_concurrency: int = 1,
+                 min_concurrency: int = 2,
                  max_concurrency: int = 30,
                  window_size: int = 100):
         """
