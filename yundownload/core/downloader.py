@@ -1,7 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor, Future
 from typing import TYPE_CHECKING, Type
 
-from utils.work import WorkerFuture
+from yundownload.utils.work import WorkerFuture
 from yundownload.network.base import BaseProtocolHandler
 from yundownload.network.ftp import FTPProtocolHandler
 from yundownload.network.http import HttpProtocolHandler
