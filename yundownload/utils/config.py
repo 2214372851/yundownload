@@ -1,5 +1,5 @@
 import os
-from yundownload.utils.core import Environment
+from ..utils.core import Environment
 
 DEFAULT_HEADERS = {
     'User-Agent': 'Wget/1.12 (linux-gnu)',

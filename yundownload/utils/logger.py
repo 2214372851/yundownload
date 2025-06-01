@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 import colorlog
 
 if TYPE_CHECKING:
-    from yundownload.core import Resources
-    from yundownload.utils import Result
+    from ..core import Resources
+    from ..utils import Result
 
 
 class Logger(logging.Logger):
