@@ -1,13 +1,14 @@
-from yundownload.utils.logger import logger
-from yundownload.utils.tools import convert_slice_path, retry, retry_async
-from yundownload.utils.exceptions import (
+from .logger import logger
+from .tools import convert_slice_path, retry, retry_async
+from .exceptions import (
     DownloadException,
     ChunkUnsupportedException,
     NotSupportedProtocolException,
     ConnectionException,
     AuthException
 )
-from yundownload.utils.config import (
+from .work import WorkerFuture
+from .config import (
     DEFAULT_HEADERS,
     DEFAULT_CHUNK_SIZE,
     DEFAULT_SLICED_CHUNK_SIZE,
@@ -16,5 +17,5 @@ from yundownload.utils.config import (
     DEFAULT_RETRY_DELAY,
     DEFAULT_SLICED_FILE_SUFFIX,
 )
-from yundownload.utils.core import Result
-from yundownload.utils.equilibrium import DynamicSemaphore, DynamicConcurrencyController
+from .core import Result
+from .equilibrium import DynamicSemaphore, DynamicConcurrencyController

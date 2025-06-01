@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 
 class WorkerFuture:
-    def __init__(self, future: Future, protocol: Type[BaseProtocolHandler], resources: 'Resources'):
+    def __init__(self, future: Future, protocol: Type['BaseProtocolHandler'], resources: 'Resources'):
         self._future = future
         self._protocol = protocol
         self.resources = resources

@@ -1,4 +1,4 @@
-from yundownload import Downloader, Resources
+from .. import Downloader, Resources
 import argparse
 
 def cli():

@@ -1,10 +1,10 @@
-import math
-import random
-import collections
-import time
-import statistics
 import asyncio
-from yundownload.utils.logger import logger
+import collections
+import math
+import statistics
+import time
+
+from ..utils.logger import logger
 
 
 class DynamicConcurrencyController:

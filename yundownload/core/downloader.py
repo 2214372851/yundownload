@@ -1,19 +1,19 @@
 from concurrent.futures import ProcessPoolExecutor, Future
 from typing import TYPE_CHECKING, Type
 
-from utils.work import WorkerFuture
-from yundownload.network.base import BaseProtocolHandler
-from yundownload.network.ftp import FTPProtocolHandler
-from yundownload.network.http import HttpProtocolHandler
-from yundownload.network.m3u import M3U8ProtocolHandler
-from yundownload.network.sftp import SFTPProtocolHandler
-from yundownload.utils.core import Result
-from yundownload.utils.exceptions import NotSupportedProtocolException
-from yundownload.utils.logger import logger
-from yundownload.utils.tools import retry
+from ..utils.work import WorkerFuture
+from ..network.base import BaseProtocolHandler
+from ..network.ftp import FTPProtocolHandler
+from ..network.http import HttpProtocolHandler
+from ..network.m3u import M3U8ProtocolHandler
+from ..network.sftp import SFTPProtocolHandler
+from ..utils.core import Result
+from ..utils.exceptions import NotSupportedProtocolException
+from ..utils.logger import logger
+from ..utils.tools import retry
 
 if TYPE_CHECKING:
-    from yundownload.core import Resources
+    from ..core import Resources
 
 
 def _run(protocols: Type['BaseProtocolHandler'], resources: 'Resources') -> 'Result':

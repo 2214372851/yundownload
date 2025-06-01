@@ -1,13 +1,13 @@
 import asyncio
 import time
-from string import Template
 from pathlib import Path
+from random import randint
+from string import Template
 from threading import Thread, Event
 from typing import Callable, Union, TypeVar
-from yundownload.utils.logger import logger
-from random import randint
 
-from yundownload.utils.config import DEFAULT_SLICED_FILE_SUFFIX
+from ..utils.config import DEFAULT_SLICED_FILE_SUFFIX
+from ..utils.logger import logger
 
 T = TypeVar('T')
 
@@ -35,6 +35,7 @@ def retry(
     :param retry_delay: Retry interval
     :return:
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         def wrapper(*args, **kwargs) -> T:
             for i in range(retry_count):
@@ -49,6 +50,7 @@ def retry(
                         time.sleep(randint(*retry_delay))
                     else:
                         time.sleep(retry_delay)
+            raise RuntimeError("Unreachable code")
 
         return wrapper
 
@@ -63,6 +65,7 @@ def retry_async(retry_count: int = 1, retry_delay: Union[int, tuple[float, float
     :param retry_delay: Retry interval
     :return:
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         async def wrapper(*args, **kwargs) -> T:
             for i in range(retry_count):
@@ -77,6 +80,7 @@ def retry_async(retry_count: int = 1, retry_delay: Union[int, tuple[float, float
                         await asyncio.sleep(randint(*retry_delay))
                     else:
                         await asyncio.sleep(retry_delay)
+            raise RuntimeError("Unreachable code")
 
         return wrapper
 
