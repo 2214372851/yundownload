@@ -52,9 +52,8 @@ if __name__ == '__main__':
 `yundownload uri save_path`
 
 # Update log
--  V 0.6.11
+-  V 0.6.10
     - Fixed path management issues and unavailability caused by previous version updates
-- V 0.6.10
     - The fix is compatible with python 3.10
     - Improved task status tracking
     - Modify the average speed to real-time speed
