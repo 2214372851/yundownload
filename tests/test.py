@@ -14,8 +14,8 @@ def test_ftp():
 def test_http():
     with Downloader() as d:
         result = d.submit(Resources(
-            uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
-            save_path=r"../test_files/http/DeepSeek-R1-AWQ/model-00074-of-00074.safetensors"
+            uri="https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe",
+            save_path=r"../test_files/http/qq.exe"
         ))
         assert result.state.is_success()
 

@@ -1,10 +1,10 @@
 from concurrent.futures import Future
 from typing import Type, TYPE_CHECKING
-from yundownload import Result
+from .core import Result
 
 if TYPE_CHECKING:
     from network import BaseProtocolHandler
-    from yundownload import Resources
+    from ..core.resources import Resources
 
 
 class WorkerFuture:
