@@ -90,7 +90,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
             test_response = self.client.request(self._method, resources.uri, headers={'Range': 'bytes=0-1'},
                                                 data=resources.http_data)
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=True)
             return Result.FAILURE
 
         if resources.save_path.exists():
