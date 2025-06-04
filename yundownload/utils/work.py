@@ -20,7 +20,6 @@ class WorkerFuture:
     def state(self) -> 'Result':
         return self._future.result()
 
-    @property
     def finish(self):
         return bool(self._future.result() & (Result.EXIST | Result.SUCCESS))
 
