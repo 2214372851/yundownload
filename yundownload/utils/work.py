@@ -22,3 +22,36 @@ class WorkerFuture:
     @property
     def finish(self):
         return bool(self._future.result() & (Result.EXIST | Result.SUCCESS))
+
+    def done(self):
+        """
+        :return: 是否完成
+        """
+        return self._future.done()
+
+    def cancel(self):
+        """
+        取消任务
+        :return:
+        """
+        return self._future.cancel()
+
+    def running(self):
+        """
+        任务是否正在运行
+        :return:
+        """
+        return self._future.running()
+
+    def cancelled(self):
+        """
+        任务是否被取消
+        :return:
+        """
+        return self._future.cancelled()
+
+    def __repr__(self):
+        return f'<WorkerFuture {self._future}>'
+
+
+
