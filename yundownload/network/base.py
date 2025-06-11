@@ -2,6 +2,8 @@ import os
 import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+
+from yundownload.utils import retry
 from yundownload.utils.core import Environment
 
 from yundownload.utils.tools import Interval
@@ -83,7 +85,7 @@ class BaseProtocolHandler(ABC):
         try:
             self.timer.start()
             self.resources = resources
-            result = self.download(resources)
+            result = retry(retry_count=resources.retry, retry_delay=resources.retry_delay)(self.download)(resources)
             if result.is_success():
                 logger.resource_result(resources, result)
             elif result.is_exist():
