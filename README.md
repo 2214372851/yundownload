@@ -52,7 +52,14 @@ if __name__ == '__main__':
 `yundownload uri save_path`
 
 # Update log
--  V 0.6.11
+
+- V 0.6.13
+    - 修改了 _breakpoint_resumption 方法，增加了对服务器不支持 Accept-Ranges 的情况的处理
+    - 使用 stream 方式发送范围请求，提高性能并避免不必要的请求
+    - 更新了版本号至 0.6.13
+- V 0.6.12
+    - Fix the abnormal import caused by type labeling
+- V 0.6.11
     - Fixed path management issues and unavailability caused by previous version updates
 - V 0.6.10 (Unavailable and removed)
     - The fix is compatible with python 3.10
