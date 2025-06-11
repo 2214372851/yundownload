@@ -83,12 +83,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
             test_response.raise_for_status()
             content_length = int(test_response.headers.get('Content-Length', 0))
             self._total_size = content_length
-        except httpx.HTTPStatusError:
+        except httpx.HTTPStatusError as e:
             with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
                 test_response.raise_for_status()
                 content_length = int(test_response.headers.get('Content-Length'))
-            test_response = self.client.request(self._method, resources.uri, headers={'Range': 'bytes=0-1'},
-                                                data=resources.http_data)
         except Exception as e:
             logger.error(e, exc_info=True)
             return Result.FAILURE
@@ -217,11 +215,15 @@ class HttpProtocolHandler(BaseProtocolHandler):
             logger.info(f'delete chunk success: {chunk_path}')
         logger.info(f'merge file success: {save_path}')
 
-    @staticmethod
-    def _breakpoint_resumption(response):
-        return (response.headers.get('Accept-Ranges') == 'bytes' or
-                response.headers.get('Content-Range', '').startswith('bytes 0-1/') or
-                response.headers.get('Content-Length') == '2')
+    def _breakpoint_resumption(self, response):
+        if response.headers.get('Accept-Ranges') == 'bytes':
+            return True
+        else:
+            with self.client.stream(self._method, response.request.url, content=response.request.content,
+                                    headers={'Range': 'bytes=0-1'}) as test_response:
+                test_response.raise_for_status()
+                return (test_response.headers.get('Content-Range', '').startswith('bytes 0-1/') or
+                        test_response.headers.get('Content-Length') == '2')
 
     def close(self):
         self.client.close()
