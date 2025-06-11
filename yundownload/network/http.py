@@ -140,8 +140,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
         tasks = []
         for start in range(0, content_length, self.sliced_chunk_size):
             end = start + self.sliced_chunk_size - 1
-            if end > content_length:
-                end = content_length
+            if end > (content_length - 1):
+                end = content_length - 1
+            else:
+                continue
             slice_path = path_template(start)
             tasks.append(
                 asyncio.create_task(
