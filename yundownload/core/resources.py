@@ -24,6 +24,7 @@ class Resources:
                  ftp_timeout: int = 30,
                  ftp_port: int = 21,
                  sftp_port: int = 22,
+                 http_stream: bool = False,
                  metadata: dict = None,
                  retry: int = 3,
                  retry_delay: int | tuple[int, int] = 10,
@@ -64,6 +65,7 @@ class Resources:
         self.semaphore: Optional['DynamicSemaphore'] = None
 
         # http protocol and part m3u8 protocol
+        self.http_stream = http_stream
         self.http_method = http_method
         self.http_params = http_params
         self.http_headers = http_headers

@@ -67,7 +67,8 @@ class HttpProtocolHandler(BaseProtocolHandler):
         resources.update_semaphore()
         return self._match_method(resources)
 
-    def _create_base_config(self, resources: 'Resources'):
+    @staticmethod
+    def _create_base_config(resources: 'Resources'):
         """
         创建HTTP客户端的基础配置
         
@@ -112,7 +113,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
         resources.save_path.parent.mkdir(parents=True, exist_ok=True)
         breakpoint_flag = self._breakpoint_resumption(test_response)
         resources.metadata['_breakpoint_flag'] = breakpoint_flag
-        if breakpoint_flag and content_length > self._slice_threshold:
+        if breakpoint_flag and content_length > self._slice_threshold and not resources.http_stream:
             logger.info(f'sliced download: {content_length} {resources.uri} to {resources.save_path}')
             return asyncio.run(self._sliced_download(resources, content_length))
         else:
@@ -233,7 +234,11 @@ class HttpProtocolHandler(BaseProtocolHandler):
         if response.headers.get('Accept-Ranges') == 'bytes':
             return True
         else:
-            with self.client.stream(self._method, response.request.url, content=response.request.content,
+            try:
+                content = response.request.content
+            except httpx.RequestNotRead:
+                content = None
+            with self.client.stream(self._method, response.request.url, content=content,
                                     headers={'Range': 'bytes=0-1'}) as test_response:
                 test_response.raise_for_status()
                 return (test_response.headers.get('Content-Range', '').startswith('bytes 0-1/') or

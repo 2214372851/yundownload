@@ -71,6 +71,18 @@ Resources(
 )
 ```
 
+### 禁用切片（HTTP 与 M3U8 可用）
+
+```python
+from yundownload import Resources
+
+Resources(
+    uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
+    save_path="model-00074-of-00074.safetensors",
+    http_stream=True
+)
+```
+
 ### 请求参数（HTTP 与 M3U8 可用）
 
 目前可应用于 `http` 以及 `m3u8` 请求中，请求参数以字典的形式传入
