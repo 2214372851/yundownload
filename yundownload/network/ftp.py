@@ -36,6 +36,13 @@ class FTPProtocolHandler(BaseProtocolHandler):
         password = parsed.password or "anonymous@"
         remote_path = unquote(parsed.path)
 
+        if remote_path.startswith('/'):
+            # 某些FTP服务器不需要前导斜杠
+            remote_path = remote_path[1:]
+        if not remote_path:
+            logger.error(f"Empty remote path in URI: {uri}")
+            return Result.FAILURE
+
         self._connect(host, port, resources.ftp_timeout)
         self._login(username, password)
 
@@ -45,7 +52,7 @@ class FTPProtocolHandler(BaseProtocolHandler):
 
         prepare = self._prepare_local_file(local_path, file_size)
         self._total_size = file_size
-        if prepare & Result.EXIST:
+        if prepare == Result.EXIST:
             return Result.EXIST
 
         with open(local_path, "ab" if self.support_rest else "wb") as f:

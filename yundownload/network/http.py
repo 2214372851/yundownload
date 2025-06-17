@@ -8,12 +8,12 @@ import httpx
 from yundownload.network.base import BaseProtocolHandler
 from yundownload.utils.config import DEFAULT_HEADERS, DEFAULT_CHUNK_SIZE
 from yundownload.utils.core import Result
+from yundownload.utils.equilibrium import DynamicSemaphore
 from yundownload.utils.logger import logger
 from yundownload.utils.tools import convert_slice_path
 
 if TYPE_CHECKING:
     from yundownload.core.resources import Resources
-    from yundownload.utils.equilibrium import DynamicSemaphore
 
 
 class HttpProtocolHandler(BaseProtocolHandler):
@@ -30,47 +30,60 @@ class HttpProtocolHandler(BaseProtocolHandler):
         self._slice_threshold = resources.http_slice_threshold
         self._method = resources.http_method
         self.sliced_chunk_size = resources.http_sliced_chunk_size
-        self.client = httpx.Client(
-            timeout=resources.http_timeout,
-            auth=resources.http_auth,
-            mounts={
-                'http://': httpx.HTTPTransport(
-                    proxy=resources.http_proxy.get('http'),
-                ),
-                'https://': httpx.HTTPTransport(
-                    proxy=resources.http_proxy.get('https'),
-                )
-            },
-            headers=DEFAULT_HEADERS,
-            follow_redirects=True,
-            transport=httpx.HTTPTransport(
-                retries=5
+
+        # 创建基础配置
+        base_config = self._create_base_config(resources)
+
+        # 创建同步客户端
+        sync_config = base_config.copy()
+        sync_config['mounts'] = {
+            'http://': httpx.HTTPTransport(
+                proxy=resources.http_proxy.get('http'),
             ),
-            verify=resources.http_verify
-        )
+            'https://': httpx.HTTPTransport(
+                proxy=resources.http_proxy.get('https'),
+            )
+        }
+        sync_config['transport'] = httpx.HTTPTransport(retries=5)
+
+        self.client = httpx.Client(**sync_config)
         self.client.params.merge(resources.http_params)
         self.client.headers.update(resources.http_headers)
         self.client.cookies.update(resources.http_cookies)
 
-        self.aclient = httpx.AsyncClient(
-            timeout=resources.http_timeout,
-            auth=resources.http_auth,
-            mounts={
-                'http://': httpx.AsyncHTTPTransport(
-                    proxy=resources.http_proxy.get('http'),
-                ),
-                'https://': httpx.AsyncHTTPTransport(
-                    proxy=resources.http_proxy.get('https'),
-                )
-            },
-            headers=DEFAULT_HEADERS,
-            follow_redirects=True,
-            transport=httpx.AsyncHTTPTransport(
-                retries=5
+        # 创建异步客户端
+        async_config = base_config.copy()
+        async_config['mounts'] = {
+            'http://': httpx.AsyncHTTPTransport(
+                proxy=resources.http_proxy.get('http'),
             ),
-            verify=resources.http_verify
-        )
+            'https://': httpx.AsyncHTTPTransport(
+                proxy=resources.http_proxy.get('https'),
+            )
+        }
+        async_config['transport'] = httpx.AsyncHTTPTransport(retries=5)
+
+        self.aclient = httpx.AsyncClient(**async_config)
+        resources.update_semaphore()
         return self._match_method(resources)
+
+    def _create_base_config(self, resources: 'Resources'):
+        """
+        创建HTTP客户端的基础配置
+        
+        Args:
+            resources: 资源对象
+            
+        Returns:
+            包含基础配置的字典
+        """
+        return {
+            'timeout': resources.http_timeout,
+            'auth': resources.http_auth,
+            'headers': DEFAULT_HEADERS,
+            'follow_redirects': True,
+            'verify': resources.http_verify
+        }
 
     @staticmethod
     def check_protocol(uri: str) -> bool:
@@ -86,7 +99,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
         except httpx.HTTPStatusError as e:
             with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
                 test_response.raise_for_status()
-                content_length = int(test_response.headers.get('Content-Length'))
+                content_length = int(test_response.headers.get('Content-Length', 0))
         except Exception as e:
             logger.error(e, exc_info=True)
             return Result.FAILURE
@@ -150,9 +163,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
             )
             chunks_path.append(slice_path)
         results = await asyncio.gather(*tasks)
-        await self.aclient.aclose()
         if all(results):
             self._merge_chunk(resources.save_path, chunks_path)
+            if not self.aclient.is_closed:
+                await self.aclient.aclose()
             return Result.SUCCESS
         return Result.FAILURE
 

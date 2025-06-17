@@ -34,6 +34,7 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
         :param resources: Resource objects
         :return: Result
         """
+        resources.update_semaphore()
         if resources.save_path.exists():
             return Result.EXIST
         async with AsyncClient(
