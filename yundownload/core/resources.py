@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union, Literal, Dict
+from typing import Union, Literal, Dict, Optional
 
 from yundownload.utils import DynamicConcurrencyController, DynamicSemaphore
 
@@ -60,8 +60,8 @@ class Resources:
 
         self.retry = retry
         self.retry_delay = retry_delay
-        dcc = DynamicConcurrencyController(min_concurrency, max_concurrency, window_size)
-        self.semaphore = DynamicSemaphore(dcc)
+        self.dcc = DynamicConcurrencyController(min_concurrency, max_concurrency, window_size)
+        self.semaphore: Optional['DynamicSemaphore'] = None
 
         # http protocol and part m3u8 protocol
         self.http_method = http_method
@@ -89,8 +89,11 @@ class Resources:
         """
         self._set_lock = False
 
+    def update_semaphore(self):
+        self.semaphore = DynamicSemaphore(self.dcc)
+
     def __setattr__(self, key, value):
-        if self._set_lock:
+        if self._set_lock or key in ('dcc', 'semaphore'):
             return super().__setattr__(key, value)
         raise AttributeError(f'{self.__repr__()} it is locked and cannot be modified')
 
