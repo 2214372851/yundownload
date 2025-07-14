@@ -57,6 +57,20 @@ if __name__ == '__main__':
 - `YUNDOWNLOAD_DEFAULT_MAX_RETRY`: 设置下载器的默认重试次数，默认为 `3`
 - `YUNDOWNLOAD_DEFAULT_RETRY_DELAY`: 设置下载器的默认重试延迟时间，默认为 `3`
 
+### 强制流式（HTTP 可用）
+
+你可以通过 `http_stream` 参数来强制使用流式下载，这样可以避免服务无法承接自动并发或文件不支持切片下载。
+
+```python
+from yundownload import Resources
+
+Resources(
+    uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
+    save_path="model-00074-of-00074.safetensors",
+    http_stream=True
+)
+```
+
 ### 请求方式（HTTP 与 M3U8 可用）
 
 目前支持的请求方式有 `GET`、`POST`、`PUT`、`DELETE`，默认为 `GET` 请求。
@@ -68,6 +82,18 @@ Resources(
     uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
     save_path="model-00074-of-00074.safetensors",
     http_method="GET"
+)
+```
+
+### 禁用切片（HTTP 与 M3U8 可用）
+
+```python
+from yundownload import Resources
+
+Resources(
+    uri="https://hf-mirror.com/cognitivecomputations/DeepSeek-R1-AWQ/resolve/main/model-00074-of-00074.safetensors?download=true",
+    save_path="model-00074-of-00074.safetensors",
+    http_stream=True
 )
 ```
 
