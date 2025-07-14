@@ -2,6 +2,7 @@ import asyncio
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse, urljoin
+from shutil import rmtree
 
 import aiofiles
 import m3u8
@@ -128,14 +129,13 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
         for segment_path in segment_paths:
             segment_path.unlink()
             logger.info(f"Delete fragments #{segment_path}")
-        segment_path.parent.unlink()
+        rmtree(segment_paths[0].parent, ignore_errors=True)
         logger.info(f"Merge fragments success to {save_path}")
 
     @staticmethod
     def parse_segments(playlist: m3u8.M3U8) -> list:
         """Parse TS fragment information"""
         segments = []
-
         for seg in playlist.segments:
             segment_info = {
                 'duration': seg.duration,
@@ -178,6 +178,7 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
     async def m3u8_load(client: 'AsyncClient', uri: str) -> 'm3u8.M3U8':
         response = await client.get(uri)
         response: Response
+        response.raise_for_status()
         return m3u8.M3U8(response.text, base_uri=urljoin(str(response.url), "."))
 
     def close(self):
