@@ -47,16 +47,24 @@ if __name__ == '__main__':
     print(r1.result(), r2.result(), r3.result(), r4.result())
 ```
 
-> 命令行在当前版本 `0.6.0-beta.2` 支持最简单的下载，将在后续根据情况完善
+> The command line supports the easiest download in the current version '0.6.0-beta.2' and will be improved in the future
 
 `yundownload uri save_path`
 
-# Update log
-
+# Change log
+- V 0.6.17
+    - Fixed the exception of clearing the cache after m3u8 download
+    - Provide the option to force streaming downloads for HTTP downloads
+- V 0.6.16
+    - Fixed some bugs
+- V 0.6.15
+    - Fixed some bugs
+- V 0.6.14
+    - Fixed some bugs
 - V 0.6.13
-    - 修改了 _breakpoint_resumption 方法，增加了对服务器不支持 Accept-Ranges 的情况的处理
-    - 使用 stream 方式发送范围请求，提高性能并避免不必要的请求
-    - 更新了版本号至 0.6.13
+    - The _breakpoint_resumption method has been modified to handle cases where the server does not support Accept-Ranges
+    - Use stream to send scoped requests to improve performance and avoid unnecessary requests
+    - Updated version number to 0.6.13
 - V 0.6.12
     - Fix the abnormal import caused by type labeling
 - V 0.6.11
