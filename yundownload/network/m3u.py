@@ -77,7 +77,6 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 if not segments[0]['encryption']:
                     await self.merge_segments(segment_paths, resources.save_path)
                 elif segments[0]['encryption'] and segments[0]['encryption']['method'] == 'AES-128':
-                    # {'method': 'AES-128', 'key_uri': 'https://vodcnd10.myqqdd.com/20250804/LgCrwLUc/5891kb/hls/key.key', 'iv': '0x00000000000000000000000000000000'}
                     key_resp = await client.get(segments[0]['encryption']['key_uri'])
                     key_content = key_resp.content
                     await self.merge_segments(segment_paths, resources.save_path, key_content, segments)
