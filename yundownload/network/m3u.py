@@ -145,10 +145,10 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                             await f.write(chunk)
                     logger.info(f"Merge fragments #{segment_path} to {save_path}")
 
-        # for segment_path in segment_paths:
-        #     segment_path.unlink()
-        #     logger.info(f"Delete fragments #{segment_path}")
-        # rmtree(segment_paths[0].parent, ignore_errors=True)
+        for segment_path in segment_paths:
+            segment_path.unlink()
+            logger.info(f"Delete fragments #{segment_path}")
+        rmtree(segment_paths[0].parent, ignore_errors=True)
         logger.info(f"Merge fragments success to {save_path}")
 
     @staticmethod
