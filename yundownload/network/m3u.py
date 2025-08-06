@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from yundownload.utils.equilibrium import DynamicSemaphore
 
 from yundownload.utils import DEFAULT_CHUNK_SIZE
+from Crypto.Cipher import AES
 
 
 class M3U8ProtocolHandler(BaseProtocolHandler):
@@ -75,6 +76,12 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
             if all([r & (Result.SUCCESS | Result.EXIST) for r in results]):
                 if not segments[0]['encryption']:
                     await self.merge_segments(segment_paths, resources.save_path)
+                elif segments[0]['encryption'] and segments[0]['encryption']['method'] == 'AES-128':
+                    # {'method': 'AES-128', 'key_uri': 'https://vodcnd10.myqqdd.com/20250804/LgCrwLUc/5891kb/hls/key.key', 'iv': '0x00000000000000000000000000000000'}
+                    key_resp = await client.get(segments[0]['encryption']['key_uri'])
+                    key_content = key_resp.content
+                    await self.merge_segments(segment_paths, resources.save_path, key_content, segments)
+
                 else:
                     logger.info("This is a encrypted m3u8, please decrypt it by yourself")
                 return Result.SUCCESS
@@ -115,21 +122,34 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
             return Result.SUCCESS
 
     @staticmethod
-    async def merge_segments(segment_paths: list[Path], save_path: Path):
+    async def merge_segments(segment_paths: list[Path], save_path: Path, key_content: bytes = None, segments: list = None) -> None:
         async with aiofiles.open(save_path, "wb") as f:
-            for segment_path in segment_paths:
-                async with aiofiles.open(segment_path, "rb") as segment_file:
-                    chunk_size = DEFAULT_CHUNK_SIZE
-                    while True:
-                        chunk = await segment_file.read(chunk_size)
-                        if not chunk:
-                            break
-                        await f.write(chunk)
-                logger.info(f"Merge fragments #{segment_path} to {save_path}")
-        for segment_path in segment_paths:
-            segment_path.unlink()
-            logger.info(f"Delete fragments #{segment_path}")
-        rmtree(segment_paths[0].parent, ignore_errors=True)
+            if key_content and segments:
+                for index, segment_path in enumerate(segment_paths):
+                    cipher = AES.new(key_content, AES.MODE_CBC, bytes.fromhex(segments[index]['encryption']['iv'][2:]))
+                    async with aiofiles.open(segment_path, "rb") as segment_file:
+                        while True:
+                            chunk = await segment_file.read(16384)
+                            if not chunk:
+                                break
+                            await f.write(cipher.decrypt(chunk))
+                    logger.info(f"Merge fragments #{segment_path} to {save_path}")
+
+            else:
+                for segment_path in segment_paths:
+                    async with aiofiles.open(segment_path, "rb") as segment_file:
+                        chunk_size = DEFAULT_CHUNK_SIZE
+                        while True:
+                            chunk = await segment_file.read(chunk_size)
+                            if not chunk:
+                                break
+                            await f.write(chunk)
+                    logger.info(f"Merge fragments #{segment_path} to {save_path}")
+
+        # for segment_path in segment_paths:
+        #     segment_path.unlink()
+        #     logger.info(f"Delete fragments #{segment_path}")
+        # rmtree(segment_paths[0].parent, ignore_errors=True)
         logger.info(f"Merge fragments success to {save_path}")
 
     @staticmethod
@@ -147,7 +167,7 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 segment_info['encryption'] = {
                     'method': seg.key.method,
                     'key_uri': urljoin(playlist.base_uri, seg.key.uri) if seg.key.uri else None,
-                    'iv': seg.key.iv.hex() if seg.key.iv else None
+                    'iv': seg.key.iv if seg.key.iv else None
                 }
 
             segments.append(segment_info)
