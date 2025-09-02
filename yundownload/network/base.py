@@ -118,7 +118,7 @@ class BaseProtocolHandler(ABC):
         self.start_time = time.time()
 
     @abstractmethod
-    def download(self, resources: 'Resources') -> 'Result':
+    def download(self, resources: 'Resources') -> 'Result':  # noqa
         """
         Download resources
         """
