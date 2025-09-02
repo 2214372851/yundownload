@@ -59,6 +59,8 @@ class BaseProtocolHandler(ABC):
             return 0
         current_size = self.current_size - self._last_current_size
         self._last_current_size = self.current_size
+        if time.time() - self._last_time == 0:
+            return 0
         speed = current_size / (time.time() - self._last_time)
         self._last_time  = time.time()
         return speed
