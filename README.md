@@ -52,6 +52,8 @@ if __name__ == '__main__':
 `yundownload uri save_path`
 
 # Change log
+- V 0.6.20
+    
 - V 0.6.17
     - Fixed the exception of clearing the cache after m3u8 download
     - Provide the option to force streaming downloads for HTTP downloads
