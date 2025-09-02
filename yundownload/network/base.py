@@ -87,7 +87,11 @@ class BaseProtocolHandler(ABC):
         try:
             self.timer.start()
             self.resources = resources
-            result = retry(retry_count=resources.retry, retry_delay=resources.retry_delay)(self.download)(resources)
+            result = retry(
+                retry_count=resources.retry,
+                retry_delay=resources.retry_delay,
+                before_retry=self._flush()
+            )(self.download)(resources)
             if result.is_success():
                 logger.resource_result(resources, result)
             elif result.is_exist():
@@ -101,11 +105,24 @@ class BaseProtocolHandler(ABC):
 
         return result
 
+    def _flush(self):
+        """
+        Flush the current status
+        """
+        self.current_size = 0
+        self._last_current_size = 0
+        self._last_time = time.time()
+        self._total_size = 0
+        self._total = 0
+        self._steps = 0
+        self.start_time = time.time()
+
     @abstractmethod
     def download(self, resources: 'Resources') -> 'Result':
         """
         Download resources
         """
+        self._flush()
         pass
 
     @abstractmethod
