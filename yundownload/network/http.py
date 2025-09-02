@@ -97,9 +97,13 @@ class HttpProtocolHandler(BaseProtocolHandler):
             test_response.raise_for_status()
             content_length = int(test_response.headers.get('Content-Length', 0))
         except httpx.HTTPStatusError as e:
-            with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
-                test_response.raise_for_status()
-                content_length = int(test_response.headers.get('Content-Length', 0))
+            try:
+                with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
+                    test_response.raise_for_status()
+                    content_length = int(test_response.headers.get('Content-Length', 0))
+            except Exception as e2:
+                logger.error(e2, exc_info=True)
+                return Result.FAILURE
         except Exception as e:
             logger.error(e, exc_info=True)
             return Result.FAILURE
