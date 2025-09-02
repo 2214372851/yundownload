@@ -96,7 +96,6 @@ class HttpProtocolHandler(BaseProtocolHandler):
             test_response = self.client.head(resources.uri)
             test_response.raise_for_status()
             content_length = int(test_response.headers.get('Content-Length', 0))
-            self._total_size = content_length
         except httpx.HTTPStatusError as e:
             with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
                 test_response.raise_for_status()
@@ -113,6 +112,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
         resources.save_path.parent.mkdir(parents=True, exist_ok=True)
         breakpoint_flag = self._breakpoint_resumption(test_response)
         resources.metadata['_breakpoint_flag'] = breakpoint_flag
+        self._total_size = content_length
         if breakpoint_flag and content_length > self._slice_threshold and not resources.http_stream:
             logger.info(f'sliced download: {content_length} {resources.uri} to {resources.save_path}')
             return asyncio.run(self._sliced_download(resources, content_length))
