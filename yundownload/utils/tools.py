@@ -4,12 +4,13 @@ from pathlib import Path
 from random import randint
 from string import Template
 from threading import Thread, Event
-from typing import Callable, Union, TypeVar
+from typing import Callable, Union, TypeVar, ParamSpec, Awaitable
 
 from ..utils.config import DEFAULT_SLICED_FILE_SUFFIX
 from ..utils.logger import logger
 
 T = TypeVar('T')
+P = ParamSpec('P')
 
 
 def convert_slice_path(path: Path) -> Callable[[int], Path]:
@@ -26,19 +27,23 @@ def convert_slice_path(path: Path) -> Callable[[int], Path]:
 
 def retry(
         retry_count: int = 1,
-        retry_delay: Union[int, tuple[float, float]] = 2
+        retry_delay: Union[int, tuple[float, float]] = 2,
+        before_retry: Callable[[], None] = None
 ):
     """
     Retry the decorator
 
     :param retry_count: Number of retries
     :param retry_delay: Retry interval
+    :param before_retry: Optional function to call before each retry
     :return:
     """
 
-    def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        def wrapper(*args, **kwargs) -> T:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             for i in range(retry_count):
+                if before_retry:
+                    before_retry()
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
@@ -57,18 +62,25 @@ def retry(
     return decorator
 
 
-def retry_async(retry_count: int = 1, retry_delay: Union[int, tuple[float, float]] = 2):
+def retry_async(
+        retry_count: int = 1,
+        retry_delay: Union[int, tuple[float, float]] = 2,
+        before_retry: Callable[[], Awaitable[None]] = None
+):
     """
     Asynchronous retryer
 
     :param retry_count: Number of retries
     :param retry_delay: Retry interval
+    :param before_retry: Optional function to call before each retry
     :return:
     """
 
-    def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        async def wrapper(*args, **kwargs) -> T:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             for i in range(retry_count):
+                if before_retry:
+                    await before_retry()
                 try:
                     return await func(*args, **kwargs)
                 except Exception as e:
