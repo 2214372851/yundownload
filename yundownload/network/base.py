@@ -7,7 +7,7 @@ from yundownload.utils import retry
 from yundownload.utils.core import Environment
 
 from yundownload.utils.tools import Interval
-from yundownload.utils import Result
+from yundownload.utils import Result, TUIManager
 from yundownload.utils.logger import logger
 
 if TYPE_CHECKING:
@@ -28,10 +28,17 @@ class BaseProtocolHandler(ABC):
         self._total = 0
         self._steps = 0
         self.resources = None
+        self.tui_manager = TUIManager()
+        self.progress_bar = None
         self.timer = Interval(int(os.getenv(Environment.LOG_EVERY, 5)), self._print)
 
     def _print(self):
-        logger.resource_p2s(self.resources, self.progress, self.speed)
+        # 使用TUI进度条代替日志输出
+        if self.progress_bar:
+            # 更新进度条
+            pass
+        else:
+            logger.resource_p2s(self.resources, self.progress, self.speed)
 
     @property
     def progress(self) -> float:

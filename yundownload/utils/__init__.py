@@ -8,6 +8,7 @@ from .exceptions import (
     AuthException
 )
 from .work import WorkerFuture
+from .tui import TUIManager
 from .config import (
     DEFAULT_HEADERS,
     DEFAULT_CHUNK_SIZE,

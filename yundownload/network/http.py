@@ -148,9 +148,21 @@ class HttpProtocolHandler(BaseProtocolHandler):
                 file_mode = 'wb'
             with resources.save_path.open(file_mode) as f:
                 self.current_size += resources.save_path.stat().st_size
-                for chunk in response.iter_bytes(chunk_size=DEFAULT_CHUNK_SIZE):
-                    f.write(chunk)
-                    self.current_size += len(chunk)
+                # 初始化TUI进度条
+                self.progress_bar = self.tui_manager.add_progress_bar(
+                    task_id=resources.uri,
+                    total_size=content_length,
+                    desc=f"Downloading {resources.save_path.name}"
+                )
+                self.progress_bar.start()
+                try:
+                    for chunk in response.iter_bytes(chunk_size=DEFAULT_CHUNK_SIZE):
+                        f.write(chunk)
+                        self.current_size += len(chunk)
+                        self.progress_bar.update(len(chunk))
+                finally:
+                    self.progress_bar.stop()
+                    self.tui_manager.remove_progress_bar(resources.uri)
         return Result.SUCCESS
 
     async def _sliced_download(self, resources: 'Resources', content_length: int) -> Result:

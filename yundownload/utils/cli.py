@@ -1,9 +1,11 @@
 import argparse
+import logging
 from pathlib import Path
 from urllib.parse import urlparse
 
 from .. import Downloader, Resources
 from .. import version
+from ..utils.logger import logger
 
 
 def cli():
@@ -15,10 +17,16 @@ def cli():
     parser.add_argument('--mc', type=int, default=1, help="最小并发数")
     parser.add_argument('--mx', type=int, default=10, help="最大并发数")
     parser.add_argument('--timeout', type=int, default=10, help="请求超时时间，单位秒")
+    parser.add_argument('--verbose', '-v', action='store_true', help="显示详细日志信息")
     parser.add_argument('--version', action='version', version=f'YunDownload {version.__version__}',
                         help="显示版本信息并退出")
 
     args = parser.parse_args()
+    
+    # 根据参数设置日志级别
+    if not args.verbose:
+        logger.setLevel(logging.WARNING)
+    
     with Downloader() as dl:
         resources = Resources(
             uri=args.uri,
