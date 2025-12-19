@@ -84,6 +84,9 @@ class Resources:
         self.sftp_port = sftp_port
 
         self.metadata = metadata if metadata else {}
+        
+        # TUI support attributes
+        self.total_size = 0  # Will be updated during download
 
     def lock(self):
         """

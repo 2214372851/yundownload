@@ -8,7 +8,7 @@ from yundownload.utils.core import Environment
 
 from yundownload.utils.tools import Interval
 from yundownload.utils import Result
-from yundownload.utils.logger import logger
+from yundownload.utils.enhanced_logger import logger
 
 if TYPE_CHECKING:
     from yundownload.core import Resources
@@ -31,7 +31,9 @@ class BaseProtocolHandler(ABC):
         self.timer = Interval(int(os.getenv(Environment.LOG_EVERY, 5)), self._print)
 
     def _print(self):
-        logger.resource_p2s(self.resources, self.progress, self.speed)
+        # Debug output to see if this is being called
+        print(f"DEBUG: _print called - current_size: {self.current_size}, _total_size: {self._total_size}, progress: {self.progress}")
+        logger.resource_p2s(self.resources, self.progress, self.speed, self._total_size)
 
     @property
     def progress(self) -> float:

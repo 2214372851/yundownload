@@ -94,20 +94,23 @@ class HttpProtocolHandler(BaseProtocolHandler):
 
     def _match_method(self, resources: 'Resources') -> Result:
         try:
+            print(f"DEBUG HTTP: Trying HEAD request for {resources.uri}")
             test_response = self.client.head(resources.uri)
             test_response.raise_for_status()
             content_length = int(test_response.headers.get('Content-Length', 0))
-        except httpx.HTTPStatusError as e:
+            print(f"DEBUG HTTP: HEAD request successful, content_length={content_length}")
+        except (httpx.HTTPStatusError, Exception) as e:
+            print(f"DEBUG HTTP: HEAD request failed, trying STREAM: {e}")
             try:
+                print(f"DEBUG HTTP: HEAD failed, trying STREAM for {resources.uri}")
                 with self.client.stream(self._method, resources.uri, data=resources.http_data) as test_response:
                     test_response.raise_for_status()
                     content_length = int(test_response.headers.get('Content-Length', 0))
+                print(f"DEBUG HTTP: STREAM request successful, content_length={content_length}")
             except Exception as e2:
+                print(f"DEBUG HTTP: STREAM request also failed: {e2}")
                 logger.error(e2, exc_info=True)
                 return Result.FAILURE
-        except Exception as e:
-            logger.error(e, exc_info=True)
-            return Result.FAILURE
 
         if resources.save_path.exists():
             if resources.save_path.stat().st_size == content_length:
@@ -118,6 +121,7 @@ class HttpProtocolHandler(BaseProtocolHandler):
         breakpoint_flag = self._breakpoint_resumption(test_response)
         resources.metadata['_breakpoint_flag'] = breakpoint_flag
         self._total_size = content_length
+        print(f"DEBUG HTTP: Setting _total_size to {content_length}")
         if breakpoint_flag and content_length > self._slice_threshold and not resources.http_stream:
             logger.info(f'sliced download: {content_length} {resources.uri} to {resources.save_path}')
             return asyncio.run(self._sliced_download(resources, content_length))
