@@ -1,11 +1,34 @@
 from pathlib import Path
 from typing import Union, Literal, Dict, Optional
+import os
 
 from yundownload.utils import DynamicConcurrencyController, DynamicSemaphore
 
 
 class Resources:
     _set_lock = True
+
+    @staticmethod
+    def _detect_system_proxy() -> Dict[Literal['http', 'https'], str]:
+        """
+        检测系统代理设置
+        
+        Returns:
+            包含系统代理配置的字典，如果没有检测到代理则返回空字典
+        """
+        proxy_config = {}
+        
+        # 检查 HTTP 代理
+        http_proxy = os.environ.get('http_proxy') or os.environ.get('HTTP_PROXY')
+        if http_proxy:
+            proxy_config['http'] = http_proxy
+        
+        # 检查 HTTPS 代理
+        https_proxy = os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY')
+        if https_proxy:
+            proxy_config['https'] = https_proxy
+        
+        return proxy_config
 
     def __init__(self,
                  uri: str,
@@ -70,7 +93,7 @@ class Resources:
         self.http_params = http_params
         self.http_headers = http_headers
         self.http_data = http_data
-        self.http_proxy = http_proxy if http_proxy else dict()
+        self.http_proxy = http_proxy if http_proxy else self._detect_system_proxy()
         self.http_cookies = http_cookies
         self.http_timeout = http_timeout
         self.http_auth = http_auth
