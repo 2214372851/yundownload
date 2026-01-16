@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Union, Literal, Dict, Optional
 
@@ -70,7 +71,13 @@ class Resources:
         self.http_params = http_params
         self.http_headers = http_headers
         self.http_data = http_data
-        self.http_proxy = http_proxy if http_proxy else dict()
+        self.http_proxy = http_proxy if http_proxy else {}
+        
+        # 如果没有设置代理，尝试使用系统代理
+        if not self.http_proxy.get('http'):
+            self.http_proxy['http'] = os.environ.get('http_proxy') or os.environ.get('HTTP_PROXY')
+        if not self.http_proxy.get('https'):
+            self.http_proxy['https'] = os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY')
         self.http_cookies = http_cookies
         self.http_timeout = http_timeout
         self.http_auth = http_auth
