@@ -25,6 +25,34 @@ def convert_slice_path(path: Path) -> Callable[[int], Path]:
     return render_slice_path
 
 
+def get_system_proxy() -> dict[str, str]:
+    """
+    Get system proxy settings from environment variables.
+    
+    Returns:
+        A dict containing 'http' and 'https' proxy URLs if they exist.
+    """
+    import os
+    proxies = {}
+    
+    # Check for lowercase proxy environment variables
+    http_proxy = os.environ.get('http_proxy')
+    https_proxy = os.environ.get('https_proxy')
+    
+    # Check for uppercase if lowercase not found
+    if not http_proxy:
+        http_proxy = os.environ.get('HTTP_PROXY')
+    if not https_proxy:
+        https_proxy = os.environ.get('HTTPS_PROXY')
+    
+    if http_proxy:
+        proxies['http'] = http_proxy
+    if https_proxy:
+        proxies['https'] = https_proxy
+    
+    return proxies
+
+
 def retry(
         retry_count: int = 1,
         retry_delay: Union[int, tuple[float, float]] = 2,

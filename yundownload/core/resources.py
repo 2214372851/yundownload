@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Union, Literal, Dict, Optional
 
 from yundownload.utils import DynamicConcurrencyController, DynamicSemaphore
+from yundownload.utils.tools import get_system_proxy
 
 
 class Resources:
@@ -70,7 +71,11 @@ class Resources:
         self.http_params = http_params
         self.http_headers = http_headers
         self.http_data = http_data
-        self.http_proxy = http_proxy if http_proxy else dict()
+        # Use user-provided proxy if available, otherwise try to get system proxy
+        if http_proxy:
+            self.http_proxy = http_proxy
+        else:
+            self.http_proxy = get_system_proxy()
         self.http_cookies = http_cookies
         self.http_timeout = http_timeout
         self.http_auth = http_auth
