@@ -1,4 +1,5 @@
 import asyncio
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -10,7 +11,7 @@ from yundownload.utils.config import DEFAULT_HEADERS, DEFAULT_CHUNK_SIZE
 from yundownload.utils.core import Result
 from yundownload.utils.equilibrium import DynamicSemaphore
 from yundownload.utils.logger import logger
-from yundownload.utils.tools import convert_slice_path
+from yundownload.utils.tools import convert_slice_path, get_system_proxy
 
 if TYPE_CHECKING:
     from yundownload.core.resources import Resources
@@ -32,6 +33,9 @@ class HttpProtocolHandler(BaseProtocolHandler):
         self._method = resources.http_method
         self.sliced_chunk_size = resources.http_sliced_chunk_size
 
+        # 获取系统代理配置
+        http_proxy, https_proxy = self._get_proxy_config(resources.http_proxy)
+
         # 创建基础配置
         base_config = self._create_base_config(resources)
 
@@ -39,13 +43,14 @@ class HttpProtocolHandler(BaseProtocolHandler):
         sync_config = base_config.copy()
         sync_config['mounts'] = {
             'http://': httpx.HTTPTransport(
-                proxy=resources.http_proxy.get('http'),
+                proxy=http_proxy,
+                retries=5,
             ),
             'https://': httpx.HTTPTransport(
-                proxy=resources.http_proxy.get('https'),
+                proxy=https_proxy,
+                retries=5,
             )
         }
-        sync_config['transport'] = httpx.HTTPTransport(retries=5)
 
         self.client = httpx.Client(**sync_config)
         self.client.params.merge(resources.http_params)
@@ -56,13 +61,14 @@ class HttpProtocolHandler(BaseProtocolHandler):
         async_config = base_config.copy()
         async_config['mounts'] = {
             'http://': httpx.AsyncHTTPTransport(
-                proxy=resources.http_proxy.get('http'),
+                proxy=http_proxy,
+                retries=5,
             ),
             'https://': httpx.AsyncHTTPTransport(
-                proxy=resources.http_proxy.get('https'),
+                proxy=https_proxy,
+                retries=5,
             )
         }
-        async_config['transport'] = httpx.AsyncHTTPTransport(retries=5)
 
         self.aclient = httpx.AsyncClient(**async_config)
         resources.update_semaphore()
@@ -86,6 +92,35 @@ class HttpProtocolHandler(BaseProtocolHandler):
             'follow_redirects': True,
             'verify': resources.http_verify
         }
+
+    @staticmethod
+    def _get_proxy_config(user_proxy: dict) -> tuple:
+        """
+        获取代理配置，优先使用用户传入的代理，如果没有则从系统环境变量中读取，最后尝试获取系统代理
+        
+        Args:
+            user_proxy: 用户传入的代理配置字典
+            
+        Returns:
+            包含http代理和https代理的元组
+        """
+        http_proxy = user_proxy.get('http') if user_proxy else None
+        https_proxy = user_proxy.get('https') if user_proxy else None
+
+        if not http_proxy:
+            http_proxy = os.environ.get('http_proxy') or os.environ.get('HTTP_PROXY')
+
+        if not https_proxy:
+            https_proxy = os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY')
+
+        if not http_proxy or not https_proxy:
+            system_proxy = get_system_proxy()
+            if not http_proxy:
+                http_proxy = system_proxy.get('http')
+            if not https_proxy:
+                https_proxy = system_proxy.get('https')
+
+        return http_proxy, https_proxy
 
     @staticmethod
     def check_protocol(uri: str) -> bool:

@@ -1,4 +1,5 @@
 import asyncio
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse, urljoin
@@ -11,6 +12,7 @@ from httpx import AsyncClient, Response, AsyncHTTPTransport
 from yundownload.network.base import BaseProtocolHandler
 from yundownload.utils.core import Result
 from yundownload.utils.logger import logger
+from yundownload.utils.tools import get_system_proxy
 
 if TYPE_CHECKING:
     from yundownload.core.resources import Resources
@@ -40,6 +42,7 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
         resources.update_semaphore()
         if resources.save_path.exists():
             return Result.EXIST
+        http_proxy, https_proxy = self._get_proxy_config(resources.http_proxy)
         async with AsyncClient(
                 auth=resources.http_auth,
                 timeout=resources.http_timeout,
@@ -48,10 +51,10 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 cookies=resources.http_cookies,
                 mounts={
                     'http://': AsyncHTTPTransport(
-                        proxy=resources.http_proxy.get('http'),
+                        proxy=http_proxy,
                     ),
                     'https://': AsyncHTTPTransport(
-                        proxy=resources.http_proxy.get('https'),
+                        proxy=https_proxy,
                     )
                 },
                 verify=resources.http_verify
@@ -200,6 +203,35 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
         response: Response
         response.raise_for_status()
         return m3u8.M3U8(response.text, base_uri=urljoin(str(response.url), "."))
+
+    @staticmethod
+    def _get_proxy_config(user_proxy: dict) -> tuple:
+        """
+        获取代理配置，优先使用用户传入的代理，如果没有则从系统环境变量中读取，最后尝试获取系统代理
+        
+        Args:
+            user_proxy: 用户传入的代理配置字典
+            
+        Returns:
+            包含http代理和https代理的元组
+        """
+        http_proxy = user_proxy.get('http') if user_proxy else None
+        https_proxy = user_proxy.get('https') if user_proxy else None
+
+        if not http_proxy:
+            http_proxy = os.environ.get('http_proxy') or os.environ.get('HTTP_PROXY')
+
+        if not https_proxy:
+            https_proxy = os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY')
+
+        if not http_proxy or not https_proxy:
+            system_proxy = get_system_proxy()
+            if not http_proxy:
+                http_proxy = system_proxy.get('http')
+            if not https_proxy:
+                https_proxy = system_proxy.get('https')
+
+        return http_proxy, https_proxy
 
     def close(self):
         pass
