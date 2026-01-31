@@ -11,6 +11,7 @@ from httpx import AsyncClient, Response, AsyncHTTPTransport
 from yundownload.network.base import BaseProtocolHandler
 from yundownload.utils.core import Result
 from yundownload.utils.logger import logger
+from yundownload.utils.proxy import merge_proxy_settings
 
 if TYPE_CHECKING:
     from yundownload.core.resources import Resources
@@ -40,6 +41,11 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
         resources.update_semaphore()
         if resources.save_path.exists():
             return Result.EXIST
+            
+        # 合并用户代理设置和系统代理设置
+        merged_proxy = merge_proxy_settings(resources.http_proxy)
+        logger.info(f"M3U8使用代理配置: {merged_proxy}")
+        
         async with AsyncClient(
                 auth=resources.http_auth,
                 timeout=resources.http_timeout,
@@ -48,10 +54,10 @@ class M3U8ProtocolHandler(BaseProtocolHandler):
                 cookies=resources.http_cookies,
                 mounts={
                     'http://': AsyncHTTPTransport(
-                        proxy=resources.http_proxy.get('http'),
+                        proxy=merged_proxy.get('http'),
                     ),
                     'https://': AsyncHTTPTransport(
-                        proxy=resources.http_proxy.get('https'),
+                        proxy=merged_proxy.get('https'),
                     )
                 },
                 verify=resources.http_verify

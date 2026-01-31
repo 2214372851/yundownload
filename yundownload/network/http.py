@@ -11,6 +11,7 @@ from yundownload.utils.core import Result
 from yundownload.utils.equilibrium import DynamicSemaphore
 from yundownload.utils.logger import logger
 from yundownload.utils.tools import convert_slice_path
+from yundownload.utils.proxy import merge_proxy_settings
 
 if TYPE_CHECKING:
     from yundownload.core.resources import Resources
@@ -32,6 +33,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
         self._method = resources.http_method
         self.sliced_chunk_size = resources.http_sliced_chunk_size
 
+        # 合并用户代理设置和系统代理设置
+        merged_proxy = merge_proxy_settings(resources.http_proxy)
+        logger.info(f"使用代理配置: {merged_proxy}")
+
         # 创建基础配置
         base_config = self._create_base_config(resources)
 
@@ -39,10 +44,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
         sync_config = base_config.copy()
         sync_config['mounts'] = {
             'http://': httpx.HTTPTransport(
-                proxy=resources.http_proxy.get('http'),
+                proxy=merged_proxy.get('http'),
             ),
             'https://': httpx.HTTPTransport(
-                proxy=resources.http_proxy.get('https'),
+                proxy=merged_proxy.get('https'),
             )
         }
         sync_config['transport'] = httpx.HTTPTransport(retries=5)
@@ -56,10 +61,10 @@ class HttpProtocolHandler(BaseProtocolHandler):
         async_config = base_config.copy()
         async_config['mounts'] = {
             'http://': httpx.AsyncHTTPTransport(
-                proxy=resources.http_proxy.get('http'),
+                proxy=merged_proxy.get('http'),
             ),
             'https://': httpx.AsyncHTTPTransport(
-                proxy=resources.http_proxy.get('https'),
+                proxy=merged_proxy.get('https'),
             )
         }
         async_config['transport'] = httpx.AsyncHTTPTransport(retries=5)

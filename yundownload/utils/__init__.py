@@ -19,3 +19,4 @@ from .config import (
 )
 from .core import Result
 from .equilibrium import DynamicSemaphore, DynamicConcurrencyController
+from .proxy import get_system_proxy, merge_proxy_settings
